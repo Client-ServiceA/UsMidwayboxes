@@ -256,6 +256,28 @@ th{background:var(--card)}
 </div>
 
 <script type="module">
+// ---- self-updating page: reloads when a newer copy is published (never mid-game) ----
+const PAGE_VERSION = '20261002-2300';
+(function(){
+  let busy = () => false; window.__setBusy = f => { busy = f; };
+  let pendingReload = false;
+  function reloadNow(){ const u = location.pathname + '?v=' + Date.now() + location.hash; location.replace(u); }
+  function banner(msg){ let b=document.getElementById('upd'); if(!b){ b=document.createElement('button'); b.id='upd'; b.style.cssText='position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:999;background:#e9b949;color:#1a1412;border:2px solid #1a1412;padding:10px 16px;font:700 15px Arial,sans-serif;border-radius:6px;box-shadow:0 3px 0 #000;cursor:pointer'; b.onclick=reloadNow; document.body.appendChild(b);} b.textContent=msg; }
+  async function check(){
+    try {
+      const r = await fetch(location.pathname, {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
+      const m = t.match(/PAGE_VERSION = '([^']+)'/); if(!m || m[1]===PAGE_VERSION) return;
+      if (busy()) { pendingReload = true; banner('A newer version is ready. Tap to refresh when you finish.'); }
+      else reloadNow();
+    } catch(e){}
+  }
+  window.__forceRefreshSoon = function(reason){ if (busy()) banner('Connection reset. Tap to refresh when you finish.'); else reloadNow(); };
+  setTimeout(check, 1500); setInterval(check, 4*60*1000);
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ check(); if(pendingReload && !busy()) reloadNow(); } });
+  setInterval(()=>{ if(pendingReload && !busy()) reloadNow(); }, 15000);
+})();
+
+
 // =====================================================================
 //  Firebase config (same project as the gallery)
 // =====================================================================
@@ -289,6 +311,7 @@ const BOARD_DEFAULTS = BOARD==='A'
 const DEFAULT_PUBLIC = Object.assign({ open:true, round:'Monday', sups:[], domains:[], empty:'Try again next time', prizeNames:[], iconImg:'', bgImg:'', nums:true }, PRESETS.carnival, BOARD_DEFAULTS);
 
 const $ = id => document.getElementById(id);
+window.__setBusy(() => document.body.classList.contains('picking') || (document.getElementById('revealDlg') && document.getElementById('revealDlg').classList.contains('on')));
 const esc = s => String(s == null ? '' : s);
 const ls = { get:k=>{try{return localStorage.getItem(k)}catch(e){return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}} };
 function toast(msg, ms){ const t=$('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(toast._t); toast._t=setTimeout(()=>t.style.display='none', ms||3500); }
@@ -544,8 +567,8 @@ onAuthStateChanged(auth, async u => {
   try { const dv = await getDoc(doc(db,C.devices,uid)); played = dv.exists() ? dv.data() : null; } catch(e){ played = null; }
   if (!started) {
     started = true;
-    onSnapshot(doc(db,C.game,'public'), s => { PUB = Object.assign({}, DEFAULT_PUBLIC, s.exists() ? s.data() : {}); applyLook(); if (isAdmin) fillAdmin(); renderGrid(); });
-    onSnapshot(collection(db,C.boxes), { includeMetadataChanges: true }, snap => { if (snap.metadata.hasPendingWrites) return; boxes = {}; snap.docs.forEach(d => boxes[+d.id] = d.data()); renderGrid(); if (isAdmin) loadWinners(); });
+    onSnapshot(doc(db,C.game,'public'), s => { PUB = Object.assign({}, DEFAULT_PUBLIC, s.exists() ? s.data() : {}); applyLook(); if (isAdmin) fillAdmin(); renderGrid(); }, e=>window.__forceRefreshSoon(e.code));
+    onSnapshot(collection(db,C.boxes), { includeMetadataChanges: true }, snap => { if (snap.metadata.hasPendingWrites) return; boxes = {}; snap.docs.forEach(d => boxes[+d.id] = d.data()); renderGrid(); if (isAdmin) loadWinners(); }, e=>window.__forceRefreshSoon(e.code));
   } else renderGrid();
 });
 $('dGo').addEventListener('click', async ()=>{ $('dStatus').textContent='Signing in…'; try { await signInWithEmailAndPassword(auth, $('dEmail').value.trim(), $('dPass').value); $('dStatus').textContent=''; $('adminDlg').classList.remove('on'); toast('Signed in as admin.'); } catch(err){ $('dStatus').textContent='Sign-in failed: ' + (err.code||'error'); } });

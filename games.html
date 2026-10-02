@@ -326,6 +326,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30p
       <label style="margin-top:8px">Work email <input id="pEmail" type="email" autocomplete="email" placeholder="you@americor.com"></label>
       <div class="status" id="pStatus"></div>
       <div id="pRules" style="font-size:14px;color:var(--ink2);margin-top:8px"></div>
+      <div style="font-size:14px;color:var(--accent);margin-top:6px;font-weight:700">Heads up: clicking Start uses your one play for today. Closing the game early forfeits it.</div>
       <div class="row" style="margin-top:10px"><button class="btn" id="pGo">Start</button><button class="btn ghost" id="pCancel2">Cancel</button></div>
     </div>
   </div>
@@ -355,6 +356,28 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30p
 </div>
 
 <script type="module">
+// ---- self-updating page: reloads when a newer copy is published (never mid-game) ----
+const PAGE_VERSION = '20261002-2320';
+(function(){
+  let busy = () => false; window.__setBusy = f => { busy = f; };
+  let pendingReload = false;
+  function reloadNow(){ const u = location.pathname + '?v=' + Date.now() + location.hash; location.replace(u); }
+  function banner(msg){ let b=document.getElementById('upd'); if(!b){ b=document.createElement('button'); b.id='upd'; b.style.cssText='position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:999;background:#e9b949;color:#1a1412;border:2px solid #1a1412;padding:10px 16px;font:700 15px Arial,sans-serif;border-radius:6px;box-shadow:0 3px 0 #000;cursor:pointer'; b.onclick=reloadNow; document.body.appendChild(b);} b.textContent=msg; }
+  async function check(){
+    try {
+      const r = await fetch(location.pathname, {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
+      const m = t.match(/PAGE_VERSION = '([^']+)'/); if(!m || m[1]===PAGE_VERSION) return;
+      if (busy()) { pendingReload = true; banner('A newer version is ready. Tap to refresh when you finish.'); }
+      else reloadNow();
+    } catch(e){}
+  }
+  window.__forceRefreshSoon = function(reason){ if (busy()) banner('Connection reset. Tap to refresh when you finish.'); else reloadNow(); };
+  setTimeout(check, 1500); setInterval(check, 4*60*1000);
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ check(); if(pendingReload && !busy()) reloadNow(); } });
+  setInterval(()=>{ if(pendingReload && !busy()) reloadNow(); }, 15000);
+})();
+
+
 // =====================================================================
 //  Firebase config (same project as the gallery and the booths)
 // =====================================================================
@@ -459,6 +482,7 @@ const DEFAULTS = {
   ]
 };
 const $ = id => document.getElementById(id);
+window.__setBusy(() => !!document.getElementById('game') && document.getElementById('game').classList.contains('on'));
 const esc = s => String(s == null ? '' : s);
 const ls = { get:k=>{try{return localStorage.getItem(k)}catch(e){return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}} };
 function toast(msg, ms){ const t=$('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(toast._t); toast._t=setTimeout(()=>t.style.display='none', ms||3500); }
@@ -501,7 +525,7 @@ function applyLook(){
     + PUB.baseT+' ticket for playing, extra tickets by rank for the daily top 10.';
   $('btnPlay').style.display = (PUB.open && !played) ? '' : 'none';
   $('notice').textContent = PUB.open ? '' : 'The game is closed right now. Check back later.';
-  if (played) { $('cMine').style.display=''; $('cMine').textContent='You played this round: '+played.score+' pts'; } else $('cMine').style.display='none';
+  if (played) { $('cMine').style.display=''; $('cMine').textContent = (played.score==null) ? 'You already started this round. One play per person.' : 'You played this round: '+played.score+' pts'; } else $('cMine').style.display='none';
 }
 function ticketsFor(rank){ const base=+PUB.baseT||0; const rt=(PUB.rankT||[])[rank-1]||0; return base + (rank<=10 ? rt : 0); }
 function rankScores(list){ return list.slice().sort((a,b)=> (b.score-a.score) || (a.timeMs-b.timeMs) || (a.at-b.at)); }
@@ -537,10 +561,23 @@ $('pGo').addEventListener('click', async ()=>{
   if(!PUB.sups.length) return $('pStatus').textContent='No supervisors are set up yet. Tell an admin.';
   if(bankForRound().length < 3) return $('pStatus').textContent='Not enough questions set up for this game yet. Tell an admin.';
   ls.set('bp-name',name); ls.set('bp-email',email); ls.set('bp-sup',$('pSup').value);
-  // already played? (email check happens server-side at the end; device check now)
-  try { const dv = await getDoc(doc(db,'qdevices',roundKey(PUB.round)+'__'+uid)); if (dv.exists()) { played = dv.data(); applyLook(); return $('pStatus').textContent='This device already played this round.'; } } catch(e){}
-  try { const ex = await getDoc(doc(db,'scores',roundKey(PUB.round)+'__'+emailKey(email))); if (ex.exists()) { return $('pStatus').textContent='That email has already played this round.'; } } catch(e){}
-  $('playDlg').classList.remove('on'); startGame({name, email, sup:$('pSup').value, code:$('pCode').value.trim().toUpperCase()});
+  // Register the play NOW. The server checks the code, this device, and this email before a single question is shown.
+  const rk = roundKey(PUB.round), ek = emailKey(email), code = $('pCode').value.trim().toUpperCase();
+  try { const ex = await getDoc(doc(db,'scores',rk+'__'+ek)); if (ex.exists()) return $('pStatus').textContent='That email already has a score in this round.'; } catch(e){}
+  try { const ex2 = await getDoc(doc(db,'qstarts',rk+'__'+ek)); if (ex2.exists()) return $('pStatus').textContent='That email already started this round. One play per person.'; } catch(e){}
+  $('pStatus').innerHTML = '<span class="spin"></span> Checking…';
+  try {
+    const batch = writeBatch(db);
+    batch.set(doc(db,'qdevices',rk+'__'+uid), { email, code, round: PUB.round, roundKey: rk, startedAt: Date.now(), uid });
+    batch.set(doc(db,'qstarts',rk+'__'+ek), { uid, email, startedAt: Date.now() });
+    await batch.commit();
+  } catch(err) {
+    const dv = await getDoc(doc(db,'qdevices',rk+'__'+uid)).catch(()=>null);
+    if (dv && dv.exists()) { played = dv.data(); applyLook(); return $('pStatus').textContent='This device already played this round. One play per person.'; }
+    return $('pStatus').textContent = PUB.hasCode ? "That code doesn't match today's code. Check with your supervisor." : 'Could not start (' + (err.code||err.message) + ').';
+  }
+  played = { score: null, timeMs: null, inProgress: true };
+  $('playDlg').classList.remove('on'); startGame({name, email, sup:$('pSup').value, code});
 });
 
 let G = null;
@@ -697,7 +734,7 @@ function showCrystal(){
   const chars=ans.split(''); const idxs=chars.map((c,i)=>i).filter(i=>/[a-z0-9]/i.test(chars[i])); shuffle(idxs);
   const shown=new Set(); let revealed=0;
   const draw=()=>{ $('gL').innerHTML=chars.map((c,i)=> /[a-z0-9]/i.test(c) ? (shown.has(i)?'<span>'+esc(c)+'</span>':'<span class="blank">_</span>') : (c===' '?'<span>&nbsp;&nbsp;</span>':'<span>'+esc(c)+'</span>')).join(''); };
-  const st=$('gStage'); st.innerHTML='<div class="q">'+esc(q.q)+'</div><div class="ball"><div class="letters" id="gL"></div></div><div class="typebox"><input id="gIn" autocomplete="off" autocapitalize="characters" placeholder="Type the answer"><button class="btn" id="gGo">Guess</button></div><div class="status" style="text-align:center">Guesses: <span id="gTries">0</span> · Letters shown: <span id="gShown">0</span>/'+idxs.length+'</div>';
+  const st=$('gStage'); st.innerHTML='<div class="q">'+esc(q.q)+'</div><div class="ball"><div class="letters" id="gL"></div></div><div class="typebox"><input id="gIn" type="text" inputmode="text" enterkeyhint="go" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="characters" placeholder="Type the answer"><button type="button" class="btn" id="gGo">Guess</button></div><div class="status" style="text-align:center">Guesses: <span id="gTries">0</span> · Letters shown: <span id="gShown">0</span>/'+idxs.length+'</div>';
   draw();
   const step=Math.max(600, (secs*1000*0.8)/Math.max(1,idxs.length));
   clearInterval(revealTimer); revealTimer=setInterval(()=>{ if(G.answered) return; if(revealed<idxs.length){ shown.add(idxs[revealed++]); $('gShown').textContent=revealed; draw(); } },step);
@@ -705,7 +742,7 @@ function showCrystal(){
   const guess=()=>{ if(G.answered) return; const v=$('gIn').value; if(!norm(v)) return; tries++; $('gTries').textContent=tries;
     if(norm(v)===norm(ans)){ G.answered=true; clearInterval(timerId); clearInterval(revealTimer); const frac=revealed/Math.max(1,idxs.length); const bonus=Math.round(PUB.bonus*(1-frac)); G.score+=PUB.pts+bonus; G.correct++; G.streak++; G.best=Math.max(G.best,G.streak); chars.forEach((c,i)=>shown.add(i)); draw(); $('gFb').textContent='✨ +'+(PUB.pts+bonus); if(G.streak%3===0) confetti(); $('gScore').textContent=G.score+' pts'; setTimeout(nextMode,1100); }
     else { G.score=Math.max(0,G.score-PUB.pen); G.streak=0; $('gFb').textContent='−'+PUB.pen+'  try again'; $('gScore').textContent=G.score+' pts'; $('gIn').value=''; $('gIn').focus(); } };
-  $('gGo').addEventListener('click',guess); $('gIn').addEventListener('keydown',e=>{ if(e.key==='Enter') guess(); }); setTimeout(()=>$('gIn').focus(),100);
+  $('gGo').onclick=guess; $('gGo').addEventListener('touchend',e=>{ e.preventDefault(); guess(); }); ['keydown','keyup','keypress'].forEach(ev=>$('gIn').addEventListener(ev,e=>{ if((e.key==='Enter'||e.keyCode===13) && ev==='keydown') guess(); })); $('gIn').addEventListener('change',()=>{ if($('gIn').value.trim().length>=3 && norm($('gIn').value)===norm(ans)) guess(); }); setTimeout(()=>$('gIn').focus(),100);
   $('gFb').textContent='';
   runTimer(secs, ()=>{ if(G.answered) return; G.answered=true; G.streak=0; clearInterval(revealTimer); chars.forEach((c,i)=>shown.add(i)); draw(); $('gFb').textContent='⏰ The answer was: '+ans; setTimeout(nextMode,1500); });
 }
@@ -748,7 +785,7 @@ async function finish(){
   const rk = roundKey(PUB.round), ek = emailKey(G.player.email);
   const rec = { round: PUB.round, roundKey: rk, mode: PUB.mode||'balloon', name:G.player.name, sup:G.player.sup, email:G.player.email, uid, score:G.score, timeMs:G.total, correct:G.correct, total:G.qs.length, code:G.player.code||'', at:Date.now() };
   let saved=false, why='';
-  try { const batch=writeBatch(db); batch.set(doc(db,'scores',rk+'__'+ek), rec); batch.set(doc(db,'qdevices',rk+'__'+uid), {score:G.score,timeMs:G.total,email:G.player.email,at:Date.now()}); await batch.commit(); saved=true; }
+  try { await setDoc(doc(db,'scores',rk+'__'+ek), rec); await setDoc(doc(db,'qdevices',rk+'__'+uid), {score:G.score,timeMs:G.total,email:G.player.email,at:Date.now()}, {merge:true}).catch(()=>{}); saved=true; }
   catch(err){ why = err.code==='permission-denied' ? (PUB.hasCode ? "Score not saved: the code you entered does not match today's code. Ask your supervisor for today's code and play again." : "Score not saved: this email or device already has a score in this round.") : 'Score not saved ('+(err.code||err.message)+').'; }
   played = saved ? {score:G.score,timeMs:G.total} : played;
   $('game').classList.remove('on'); $('lobbyBar').style.display=''; $('board').style.display=''; if (isAdmin) $('admin').style.display='';
@@ -845,7 +882,7 @@ $('aExportAll').addEventListener('click', async ()=>{ const all=await loadResult
 $('aReset').addEventListener('click', async ()=>{
   if(!confirm('Delete ALL scores for ALL rounds? Export first.')) return; if(prompt('Type DELETE to confirm')!=='DELETE') return;
   const st=$('aResStatus'); st.innerHTML='<span class="spin"></span> Deleting…';
-  try{ for(const c of ['scores','qdevices']){ const snap=await getDocs(collection(db,c)); let b=writeBatch(db),i=0; for(const d of snap.docs){ b.delete(d.ref); if(++i%400===0){ await b.commit(); b=writeBatch(db);} } await b.commit(); } played=null; applyLook(); st.textContent='All scores deleted.'; loadResults(); }
+  try{ for(const c of ['scores','qdevices','qstarts']){ const snap=await getDocs(collection(db,c)); let b=writeBatch(db),i=0; for(const d of snap.docs){ b.delete(d.ref); if(++i%400===0){ await b.commit(); b=writeBatch(db);} } await b.commit(); } played=null; applyLook(); st.textContent='All scores deleted.'; loadResults(); }
   catch(err){ st.textContent='Failed ('+(err.code||err.message)+').'; }
 });
 
@@ -858,7 +895,7 @@ const app=initializeApp(firebaseConfig); auth=getAuth(app); db=getFirestore(app)
 let started=false, unsubScores=null, curRound=null;
 function subscribeScores(){
   const rk=roundKey(PUB.round);
-  if (!unsubScores) unsubScores = onSnapshot(collection(db,'scores'), snap=>{ allScores=snap.docs.map(d=>d.data()); scores=allScores.filter(x=>x.roundKey===roundKey(PUB.round)); renderBoard(); }, e=>{ $('notice').textContent='Leaderboard offline ('+e.code+').'; });
+  if (!unsubScores) unsubScores = onSnapshot(collection(db,'scores'), snap=>{ allScores=snap.docs.map(d=>d.data()); scores=allScores.filter(x=>x.roundKey===roundKey(PUB.round)); renderBoard(); }, e=>{ $('notice').textContent='Leaderboard offline ('+e.code+').'; window.__forceRefreshSoon(e.code); });
   if (rk!==curRound) { curRound=rk; viewRound=rk; scores=allScores.filter(x=>x.roundKey===rk); renderBoard(); getDoc(doc(db,'qdevices',rk+'__'+uid)).then(dv=>{ played = dv.exists()?dv.data():null; applyLook(); }).catch(()=>{}); }
 }
 onAuthStateChanged(auth, async u=>{
@@ -866,7 +903,7 @@ onAuthStateChanged(auth, async u=>{
   uid=u.uid; isAdmin=!u.isAnonymous; $('admin').classList.toggle('on',isAdmin);
   if(isAdmin){ fillAdmin(true); try{ const s=await getDoc(doc(db,'quiz','secret')); if(s.exists()) $('aCode').value=s.data().code||''; }catch(e){} loadResults(); }
   if(!started){ started=true;
-    onSnapshot(doc(db,'quiz','public'), s=>{ PUB=Object.assign({}, DEFAULTS, s.exists()?s.data():{}); if(!Array.isArray(PUB.questions) || PUB.questions.length < 10) PUB.questions=DEFAULTS.questions; if(!Array.isArray(PUB.crystal) || PUB.crystal.length < 3) PUB.crystal=DEFAULTS.crystal; applyLook(); if(isAdmin) fillAdmin(); subscribeScores(); renderBoard(); });
+    onSnapshot(doc(db,'quiz','public'), s=>{ PUB=Object.assign({}, DEFAULTS, s.exists()?s.data():{}); if(!Array.isArray(PUB.questions) || PUB.questions.length < 10) PUB.questions=DEFAULTS.questions; if(!Array.isArray(PUB.crystal) || PUB.crystal.length < 3) PUB.crystal=DEFAULTS.crystal; applyLook(); if(isAdmin) fillAdmin(); subscribeScores(); renderBoard(); }, e=>window.__forceRefreshSoon(e.code));
   } else { curRound=null; subscribeScores(); }
 });
 $('dGo').addEventListener('click', async ()=>{ $('dStatus').textContent='Signing in…'; try{ await signInWithEmailAndPassword(auth,$('dEmail').value.trim(),$('dPass').value); $('dStatus').textContent=''; $('adminDlg').classList.remove('on'); toast('Signed in as admin.'); }catch(err){ $('dStatus').textContent='Sign-in failed: '+(err.code||'error'); } });
