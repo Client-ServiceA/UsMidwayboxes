@@ -198,6 +198,7 @@ th{background:var(--card)}
     </details>
     <details>
       <summary>Winners, export and reset</summary>
+      <div style="font-size:14px;color:var(--muted);margin-top:4px">New board = fresh boxes for the next day, but people who already opened one stay locked out (one box per person for the week). Full reset = also clears the winners list so everyone can play again; use it to clear test opens before Monday.</div>
       <div class="row" style="margin-top:8px;align-items:center">
         <button class="btn ghost" id="aExport" style="flex:0 1 auto">Download this board (CSV)</button>
         <button class="btn ghost" id="aExportBoth" style="flex:0 1 auto">Download ALL winners, both boards (CSV)</button>
@@ -330,7 +331,7 @@ function renderGrid(){
   $('cOpened').textContent = opened + ' of ' + PUB.count + ' opened';
   document.body.classList.toggle('picking', picking);
   const mine = $('cMine');
-  if (played) { mine.style.display=''; mine.textContent = 'You opened #' + played.box + ': ' + played.prize; $('btnPlay').style.display='none'; }
+  if (played) { mine.style.display=''; mine.textContent = 'You already opened a box' + (played.day ? ' on ' + played.day : '') + ': #' + played.box + ' · ' + played.prize + '. One box per person for the week.'; $('btnPlay').style.display='none'; }
   else { mine.style.display='none'; $('btnPlay').style.display = PUB.open ? '' : 'none'; }
   $('notice').textContent = PUB.open ? (picking ? 'Tap any unopened box.' : '') : 'The booths are closed for today. Come back when the next day opens.';
 }
@@ -367,14 +368,14 @@ async function pickBox(n){
   const ek = emailKey(email);
   picking = false; renderGrid(); $('notice').innerHTML = '<span class="spin"></span> Opening box #' + n + '…';
   // The prize is hidden from the browser. We try each possible prize; Firestore rules only accept the one that is really behind the box.
-  const candidates = Array.from(new Set([...(PUB.prizeNames||[]), PUB.empty].filter(Boolean)));
+  const candidates = shuffle(Array.from(new Set([...(PUB.prizeNames||[]), PUB.empty].filter(Boolean))));
   let won = null, lastErr = null;
   for (const prize of candidates) {
     try {
       const batch = writeBatch(db);
       batch.update(doc(db,C.boxes,String(n)), { opened:true, prize, name: shortName(name), uid, at: Date.now() });
       batch.set(doc(db,C.players,ek), { box:n, prize, name, sup, email, uid, code, day: PUB.round||'', board: BOARD, at: Date.now() });
-      batch.set(doc(db,C.devices,uid), { box:n, prize, email, at: Date.now() });
+      batch.set(doc(db,C.devices,uid), { box:n, prize, email, day: PUB.round||'', at: Date.now() });
       await batch.commit(); won = prize; break;
     } catch(err){ lastErr = err; }
   }
@@ -385,7 +386,7 @@ async function pickBox(n){
   } else {
     // figure out why
     let why = 'Something blocked that pick.';
-    try { const dv = await getDoc(doc(db,C.devices,uid)); if (dv.exists()) { played = dv.data(); why = 'This device already opened a box.'; } } catch(e){}
+    try { const dv = await getDoc(doc(db,C.devices,uid)); if (dv.exists()) { played = dv.data(); why = 'You already opened a box this week' + (played.day ? ' (' + played.day + ', #' + played.box + ')' : '') + '. One per person.'; } } catch(e){}
     if (!played) {
       const fresh = await getDoc(doc(db,C.boxes,String(n))).catch(()=>null);
       if (fresh && fresh.exists() && fresh.data().opened) why = 'Someone grabbed box #' + n + ' a second before you. Pick another one.';
@@ -537,7 +538,7 @@ onAuthStateChanged(auth, async u => {
   if (!started) {
     started = true;
     onSnapshot(doc(db,C.game,'public'), s => { PUB = Object.assign({}, DEFAULT_PUBLIC, s.exists() ? s.data() : {}); applyLook(); if (isAdmin) fillAdmin(); renderGrid(); });
-    onSnapshot(collection(db,C.boxes), snap => { boxes = {}; snap.docs.forEach(d => boxes[+d.id] = d.data()); renderGrid(); if (isAdmin) loadWinners(); });
+    onSnapshot(collection(db,C.boxes), { includeMetadataChanges: true }, snap => { if (snap.metadata.hasPendingWrites) return; boxes = {}; snap.docs.forEach(d => boxes[+d.id] = d.data()); renderGrid(); if (isAdmin) loadWinners(); });
   } else renderGrid();
 });
 $('dGo').addEventListener('click', async ()=>{ $('dStatus').textContent='Signing in…'; try { await signInWithEmailAndPassword(auth, $('dEmail').value.trim(), $('dPass').value); $('dStatus').textContent=''; $('adminDlg').classList.remove('on'); toast('Signed in as admin.'); } catch(err){ $('dStatus').textContent='Sign-in failed: ' + (err.code||'error'); } });
