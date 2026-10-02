@@ -303,7 +303,14 @@ let secretBoxes = {};  // admin only
 
 // ---------------- rendering ----------------
 function iconNode(){ if (PUB.iconImg) { const i = document.createElement('img'); i.src = PUB.iconImg; i.alt = ''; return i; } return document.createTextNode(PUB.icon || ''); }
+function applyPalette(bgHex){
+  const h=(bgHex||'#f4e9d2').replace('#',''); const n=h.length===3?h.split('').map(c=>c+c).join(''):h; const r=parseInt(n.slice(0,2),16),g=parseInt(n.slice(2,4),16),b=parseInt(n.slice(4,6),16);
+  const light = (0.299*r+0.587*g+0.114*b) > 140; const st=document.documentElement.style;
+  if (light) { st.setProperty('--ink','#1a1412'); st.setProperty('--ink2','#3a2e2a'); st.setProperty('--muted','#6a5b55'); st.setProperty('--line','#1a1412'); st.setProperty('--card','#fffaf0'); st.setProperty('--bg2','#fbf4e4'); st.setProperty('--shadow','0 2px 0 #1a1412'); }
+  else { st.setProperty('--ink','#f4e9d2'); st.setProperty('--ink2','#e2d4b8'); st.setProperty('--muted','#b5a48d'); st.setProperty('--line','#f4e9d2'); st.setProperty('--card','#241c19'); st.setProperty('--bg2','#1f1816'); st.setProperty('--shadow','0 2px 0 #000'); }
+}
 function applyLook(){
+  applyPalette(PUB.pageBg || '#f4e9d2');
   $('hKicker').textContent = PUB.kicker; $('hTitle').textContent = PUB.title; $('hSub').textContent = PUB.sub; document.title = PUB.title;
   const r = document.documentElement.style; r.setProperty('--accent', PUB.accent); r.setProperty('--accent2', PUB.accent); r.setProperty('--box-bg', PUB.boxBg);
   r.setProperty('--box-ink', PUB.boxInk||'#fff'); r.setProperty('--box-border', PUB.boxBorder||'#1a1412'); r.setProperty('--box-bw', (PUB.boxBw ?? 3)+'px'); r.setProperty('--box-r', (PUB.boxR||0)+'%');
@@ -364,7 +371,7 @@ $('pGo').addEventListener('click', () => {
 async function pickBox(n){
   if (!picking) return;
   if (boxes[n] && boxes[n].opened) return toast('That one is already open.');
-  const code=$('pCode').value.trim(), name=$('pName').value.trim(), email=$('pEmail').value.trim().toLowerCase(), sup=$('pSup').value;
+  const code=$('pCode').value.trim().toUpperCase(), name=$('pName').value.trim(), email=$('pEmail').value.trim().toLowerCase(), sup=$('pSup').value;
   const ek = emailKey(email);
   picking = false; renderGrid(); $('notice').innerHTML = '<span class="spin"></span> Opening box #' + n + '…';
   // The prize is hidden from the browser. We try each possible prize; Firestore rules only accept the one that is really behind the box.
@@ -390,7 +397,7 @@ async function pickBox(n){
     if (!played) {
       const fresh = await getDoc(doc(db,C.boxes,String(n))).catch(()=>null);
       if (fresh && fresh.exists() && fresh.data().opened) why = 'Someone grabbed box #' + n + ' a second before you. Pick another one.';
-      else why = "That code isn't valid today, or this email has already played.";
+      else { const hasPrizes = (PUB.prizeNames||[]).length > 0; why = !hasPrizes ? 'The board has no prizes loaded yet. Tell an admin to click Save prizes and randomize.' : "That code isn't right for today, or this email already opened a box this week."; }
     }
     renderGrid(); $('notice').textContent = why; toast(why, 5000);
     if (why.startsWith('Someone')) { picking = true; renderGrid(); }
@@ -442,7 +449,7 @@ $('aBgClear').addEventListener('click', ()=>{ pendingBg=''; $('aBgFile').value='
 
 async function savePublic(patch){ await setDoc(doc(db,C.game,'public'), Object.assign({}, PUB, patch)); }
 $('aCodeSave').addEventListener('click', async () => {
-  const code = $('aCode').value.trim(); if (!code) return $('aStatus').textContent='Enter a code.';
+  const code = $('aCode').value.trim().toUpperCase(); $('aCode').value = code; if (!code) return $('aStatus').textContent='Enter a code.';
   try { await setDoc(doc(db,C.game,'secret'), { code }); await savePublic({ round: $('aRound').value.trim() || PUB.round }); $('aStatus').textContent='Saved. Day: ' + ($('aRound').value.trim()||PUB.round) + ' · code: ' + code; } catch(err){ $('aStatus').textContent='Could not save (' + (err.code||'error') + ').'; }
 });
 $('aOpen').addEventListener('change', async e => { try { await savePublic({open: e.target.checked}); } catch(err){ toast('Could not save.'); } });

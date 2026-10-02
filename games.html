@@ -479,7 +479,14 @@ let played = null;      // {score,timeMs} if this device/email already played th
 let adminDirty = false;
 
 // ---------------- look ----------------
+function applyPalette(bgHex){
+  const h=(bgHex||'#f4e9d2').replace('#',''); const n=h.length===3?h.split('').map(c=>c+c).join(''):h; const r=parseInt(n.slice(0,2),16),g=parseInt(n.slice(2,4),16),b=parseInt(n.slice(4,6),16);
+  const light = (0.299*r+0.587*g+0.114*b) > 140; const st=document.documentElement.style;
+  if (light) { st.setProperty('--ink','#1a1412'); st.setProperty('--ink2','#3a2e2a'); st.setProperty('--muted','#6a5b55'); st.setProperty('--line','#1a1412'); st.setProperty('--card','#fffaf0'); st.setProperty('--bg2','#fbf4e4'); st.setProperty('--shadow','0 2px 0 #1a1412'); }
+  else { st.setProperty('--ink','#f4e9d2'); st.setProperty('--ink2','#e2d4b8'); st.setProperty('--muted','#b5a48d'); st.setProperty('--line','#f4e9d2'); st.setProperty('--card','#241c19'); st.setProperty('--bg2','#1f1816'); st.setProperty('--shadow','0 2px 0 #000'); }
+}
 function applyLook(){
+  applyPalette(PUB.pageBg);
   $('hKicker').textContent=PUB.kicker; $('hTitle').textContent=PUB.title; $('hSub').textContent=PUB.sub; document.title=PUB.title;
   const r=document.documentElement.style; r.setProperty('--accent',PUB.accent); r.setProperty('--accent2',PUB.accent); r.setProperty('--font-display',PUB.font); r.setProperty('--bg',PUB.pageBg);
   ['b1','b2','b3','b4'].forEach(k=>r.setProperty('--'+k,PUB[k]));
