@@ -46,6 +46,10 @@ details{margin-top:10px}summary{cursor:pointer;font-weight:700;min-height:44px;d
 @keyframes s{to{transform:rotate(360deg)}}
 table{border-collapse:collapse;width:100%;font-size:15px;margin-top:8px}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left}th{background:var(--card)}
 .tablewrap{overflow-x:auto}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
+.tabs button{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--card);color:var(--ink);padding:8px 12px;min-height:44px;cursor:pointer;border-radius:6px}
+.tabs button[aria-selected="true"]{background:var(--accent);color:#fff}
+.tabs button small{display:block;font-weight:400;font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.8}
 tr.me td{background:color-mix(in srgb,var(--gold) 35%,var(--card))}
 .rank{font-family:var(--font-display);font-size:18px;color:var(--accent)}
 /* ---- mode: moles ---- */
@@ -303,6 +307,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30p
 
   <section class="panel" id="board">
     <h2 id="boardTitle">Leaderboard</h2>
+    <div class="tabs" id="boardTabs"></div>
     <div class="tablewrap" id="boardTable"></div>
   </section>
 </div>
@@ -468,6 +473,8 @@ const dec = (s, i) => { try { const v = +atob(s).slice(1,2); return ((v - i*7 - 
 let db=null, auth=null, uid=null, isAdmin=false;
 let PUB = JSON.parse(JSON.stringify(DEFAULTS));
 let scores = [];        // current round
+let allScores = [];     // every round (for the tabs)
+let viewRound = null;   // roundKey being viewed on the leaderboard
 let played = null;      // {score,timeMs} if this device/email already played this round
 let adminDirty = false;
 
@@ -479,7 +486,7 @@ function applyLook(){
   document.querySelectorAll('.stripe').forEach(e=>e.classList.toggle('off',PUB.stripes===false));
   const sel=$('pSup'); sel.innerHTML=''; (PUB.sups.length?PUB.sups:['(no supervisors set)']).forEach(x=>{ const o=document.createElement('option'); o.textContent=x; sel.appendChild(o); });
   const M = MODES[PUB.mode] || MODES.balloon;
-  $('cRound').textContent='Round: '+PUB.round+' · '+M.icon+' '+M.name; $('boardTitle').textContent='Leaderboard · '+PUB.round+' · '+M.name;
+  $('cRound').textContent='Round: '+PUB.round+' · '+M.icon+' '+M.name;
   $('hTitle').textContent = PUB.title || M.name; if (!PUB.sub) $('hSub').textContent = M.sub;
   $('pRules').textContent = ((PUB.mode==='striker'||PUB.mode==='zoo') ? PUB.speedSecs+' seconds, as many questions as you can. '+PUB.pts+' points per correct; wrong answers cost '+PUB.pen+'. '
     : PUB.mode==='crystal' ? PUB.perGame+' answers to guess, '+(PUB.secs*2)+' seconds each. Up to '+(PUB.pts+PUB.bonus)+' points each; fewer letters revealed means more points. Wrong guesses cost '+PUB.pen+'. '
@@ -492,10 +499,19 @@ function applyLook(){
 function ticketsFor(rank){ const base=+PUB.baseT||0; const rt=(PUB.rankT||[])[rank-1]||0; return base + (rank<=10 ? rt : 0); }
 function rankScores(list){ return list.slice().sort((a,b)=> (b.score-a.score) || (a.timeMs-b.timeMs) || (a.at-b.at)); }
 function renderBoard(){
-  const list = rankScores(scores); const top = list.slice(0, PUB.top||20);
+  const cur = roundKey(PUB.round); if (!viewRound) viewRound = cur;
+  // tabs: every round that has scores, in schedule order, plus the current round
+  const seen = {}; allScores.forEach(x=>{ seen[x.roundKey] = seen[x.roundKey] || {round:x.round, mode:x.mode, n:0}; seen[x.roundKey].n++; });
+  if (!seen[cur]) seen[cur] = {round:PUB.round, mode:PUB.mode, n:0};
+  const order = SCHEDULE.map(d=>roundKey(d.round));
+  const keys = Object.keys(seen).sort((a,b)=> (order.indexOf(a)<0?99:order.indexOf(a)) - (order.indexOf(b)<0?99:order.indexOf(b)) || a.localeCompare(b));
+  const T=$('boardTabs'); T.innerHTML='';
+  keys.forEach(k=>{ const b=document.createElement('button'); b.setAttribute('aria-selected', String(k===viewRound)); const M=MODES[seen[k].mode]||MODES.balloon; b.innerHTML='<small>'+esc(seen[k].round)+(k===cur?' · live':'')+'</small>'+M.icon+' '+esc(M.name)+' · '+seen[k].n; b.addEventListener('click',()=>{ viewRound=k; renderBoard(); }); T.appendChild(b); });
+  const vm = seen[viewRound] || seen[cur]; $('boardTitle').textContent = 'Leaderboard · ' + (vm.round||'') + ' · ' + ((MODES[vm.mode]||MODES.balloon).name) + (viewRound===cur ? '' : ' (final)');
+  const list = rankScores(viewRound===cur ? scores : allScores.filter(x=>x.roundKey===viewRound)); const top = list.slice(0, PUB.top||20);
   let h = '<table><tr><th>#</th><th>Name</th><th>Supervisor</th><th>Score</th><th>Time</th><th>Tickets</th></tr>';
   top.forEach((s,i)=>{ const me = uid && s.uid===uid; h += '<tr'+(me?' class="me"':'')+'><td class="rank">'+(i+1)+'</td><td>'+esc(shortName(s.name))+'</td><td>'+esc(s.sup)+'</td><td>'+s.score+'</td><td>'+(s.timeMs/1000).toFixed(1)+'s</td><td>'+ticketsFor(i+1)+'</td></tr>'; });
-  $('boardTable').innerHTML = h + '</table>' + (list.length ? '<div class="status">'+list.length+' played so far this round.</div>' : '<div class="status">Nobody has played this round yet. Be first.</div>');
+  $('boardTable').innerHTML = h + '</table>' + (list.length ? '<div class="status">'+list.length+' played'+(viewRound===cur?' so far this round.':' in this round.')+'</div>' : '<div class="status">Nobody has played this round yet. Be first.</div>');
 }
 
 // ---------------- play flow ----------------
@@ -799,9 +815,9 @@ function parseBulk(){
 $('aBulkAdd').addEventListener('click',()=>{ const qs=parseBulk(); if(!qs.length) return $('aBulkStatus').textContent='Nothing parsed. Check the format.'; qs.forEach(q=>addQRow(q.q,q.o,q.c,q.cat)); adminDirty=true; $('aBulkStatus').textContent=qs.length+' added below. Click "Save questions" to publish.'; });
 $('aBulkReplace').addEventListener('click',()=>{ const qs=parseBulk(); if(!qs.length) return $('aBulkStatus').textContent='Nothing parsed. Check the format.'; if(!confirm('Replace all '+$('aQs').children.length+' existing questions with these '+qs.length+'?')) return; $('aQs').innerHTML=''; qs.forEach(q=>addQRow(q.q,q.o,q.c,q.cat)); adminDirty=true; $('aBulkStatus').textContent='Replaced. Click "Save questions" to publish.'; });
 // results
-async function allScores(){ const snap=await getDocs(collection(db,'scores')); return snap.docs.map(d=>d.data()); }
+async function fetchAllScores(){ const snap=await getDocs(collection(db,'scores')); return snap.docs.map(d=>d.data()); }
 async function loadResults(){
-  const all=await allScores(); const rounds=Array.from(new Set(all.map(s=>s.round))).sort();
+  const all=await fetchAllScores(); const rounds=Array.from(new Set(all.map(s=>s.round))).sort();
   const sel=$('aViewRound'); const cur=sel.value||PUB.round; sel.innerHTML=''; (rounds.length?rounds:[PUB.round]).forEach(r=>{ const o=document.createElement('option'); o.textContent=r; sel.appendChild(o); }); if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
   const list=rankScores(all.filter(s=>s.round===sel.value));
   let h='<table><tr><th>#</th><th>Name</th><th>Supervisor</th><th>Email</th><th>Score</th><th>Time</th><th>Correct</th><th>Tickets</th><th>When</th></tr>';
@@ -834,9 +850,9 @@ applyLook(); renderBoard();
 const app=initializeApp(firebaseConfig); auth=getAuth(app); db=getFirestore(app);
 let started=false, unsubScores=null, curRound=null;
 function subscribeScores(){
-  const rk=roundKey(PUB.round); if (rk===curRound) return; curRound=rk; if(unsubScores) unsubScores();
-  unsubScores = onSnapshot(query(collection(db,'scores'), where('roundKey','==',rk)), snap=>{ scores=snap.docs.map(d=>d.data()); renderBoard(); }, e=>{ $('notice').textContent='Leaderboard offline ('+e.code+').'; });
-  getDoc(doc(db,'qdevices',rk+'__'+uid)).then(dv=>{ played = dv.exists()?dv.data():null; applyLook(); }).catch(()=>{});
+  const rk=roundKey(PUB.round);
+  if (!unsubScores) unsubScores = onSnapshot(collection(db,'scores'), snap=>{ allScores=snap.docs.map(d=>d.data()); scores=allScores.filter(x=>x.roundKey===roundKey(PUB.round)); renderBoard(); }, e=>{ $('notice').textContent='Leaderboard offline ('+e.code+').'; });
+  if (rk!==curRound) { curRound=rk; viewRound=rk; scores=allScores.filter(x=>x.roundKey===rk); renderBoard(); getDoc(doc(db,'qdevices',rk+'__'+uid)).then(dv=>{ played = dv.exists()?dv.data():null; applyLook(); }).catch(()=>{}); }
 }
 onAuthStateChanged(auth, async u=>{
   if(!u){ uid=null; isAdmin=false; try{ await signInAnonymously(auth); }catch(e){ $('notice').textContent='Could not connect (enable Anonymous sign-in in Firebase Auth).'; } return; }
