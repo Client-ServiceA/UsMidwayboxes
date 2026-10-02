@@ -540,7 +540,7 @@ $('pGo').addEventListener('click', async ()=>{
   // already played? (email check happens server-side at the end; device check now)
   try { const dv = await getDoc(doc(db,'qdevices',roundKey(PUB.round)+'__'+uid)); if (dv.exists()) { played = dv.data(); applyLook(); return $('pStatus').textContent='This device already played this round.'; } } catch(e){}
   try { const ex = await getDoc(doc(db,'scores',roundKey(PUB.round)+'__'+emailKey(email))); if (ex.exists()) { return $('pStatus').textContent='That email has already played this round.'; } } catch(e){}
-  $('playDlg').classList.remove('on'); startGame({name, email, sup:$('pSup').value, code:$('pCode').value.trim()});
+  $('playDlg').classList.remove('on'); startGame({name, email, sup:$('pSup').value, code:$('pCode').value.trim().toUpperCase()});
 });
 
 let G = null;
@@ -749,7 +749,7 @@ async function finish(){
   const rec = { round: PUB.round, roundKey: rk, mode: PUB.mode||'balloon', name:G.player.name, sup:G.player.sup, email:G.player.email, uid, score:G.score, timeMs:G.total, correct:G.correct, total:G.qs.length, code:G.player.code||'', at:Date.now() };
   let saved=false, why='';
   try { const batch=writeBatch(db); batch.set(doc(db,'scores',rk+'__'+ek), rec); batch.set(doc(db,'qdevices',rk+'__'+uid), {score:G.score,timeMs:G.total,email:G.player.email,at:Date.now()}); await batch.commit(); saved=true; }
-  catch(err){ why = err.code==='permission-denied' ? "Score not saved: wrong code, or this email or device already played this round." : 'Score not saved ('+(err.code||err.message)+').'; }
+  catch(err){ why = err.code==='permission-denied' ? (PUB.hasCode ? "Score not saved: the code you entered does not match today's code. Ask your supervisor for today's code and play again." : "Score not saved: this email or device already has a score in this round.") : 'Score not saved ('+(err.code||err.message)+').'; }
   played = saved ? {score:G.score,timeMs:G.total} : played;
   $('game').classList.remove('on'); $('lobbyBar').style.display=''; $('board').style.display=''; if (isAdmin) $('admin').style.display='';
   applyLook();
@@ -774,7 +774,7 @@ async function savePub(patch){ await setDoc(doc(db,'quiz','public'), Object.assi
 SCHEDULE.forEach((d,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=d.round+' · '+MODES[d.mode].icon+' '+MODES[d.mode].name; $('aSched').appendChild(o); });
 $('aSched').addEventListener('change', e=>{ const d=SCHEDULE[+e.target.value]; if(!d) return; $('aRound').value=d.round; $('aMode').value=d.mode; $('aQday').value=d.qday||'auto'; adminDirty=true; $('aStatus').textContent='Loaded '+d.round+' · '+MODES[d.mode].name+'. Click Save to make it live.'; });
 $('aRoundSave').addEventListener('click', async ()=>{
-  const round=$('aRound').value.trim()||'Round 1', code=$('aCode').value.trim();
+  const round=$('aRound').value.trim()||'Round 1', code=$('aCode').value.trim().toUpperCase(); $('aCode').value=code;
   try { await setDoc(doc(db,'quiz','secret'),{code}); await savePub({round, mode:$('aMode').value, qday:$('aQday').value, hasCode: !!code, open:$('aOpen').checked}); $('aStatus').textContent='Saved. Round "'+round+'" · '+MODES[$('aMode').value].name+(code?' · code '+code:' · no code needed')+'.'; }
   catch(err){ $('aStatus').textContent='Could not save ('+(err.code||'error')+').'; }
 });
