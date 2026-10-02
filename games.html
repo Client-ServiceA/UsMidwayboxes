@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carnival Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Creepster&family=Bangers&family=Mountains+of+Christmas:wght@700&family=Pacifico&family=Fredoka:wght@600&family=Cinzel:wght@700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#f4e9d2;--bg2:#fbf4e4;--ink:#1a1412;--ink2:#3a2e2a;--muted:#6a5b55;--accent:#b3261e;--accent2:#7d1a13;--gold:#e9b949;--line:#1a1412;--card:#fffaf0;--shadow:0 2px 0 #1a1412;--font-display:'Rye',serif;
+  --b1:#e04a3f;--b2:#2b6fc2;--b3:#3d9a42;--b4:#e9b949;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Alegreya Sans','Gill Sans','Trebuchet MS',sans-serif;font-size:17px;line-height:1.4}
+.stripe{height:14px;background:repeating-linear-gradient(90deg,var(--accent) 0 28px,var(--bg) 28px 56px);border-bottom:3px solid var(--line)}
+.stripe.off{display:none}
+header{padding:18px 20px 8px;max-width:1000px;margin:0 auto;text-align:center}
+.kicker{font-size:13px;letter-spacing:3px;text-transform:uppercase;font-weight:700}
+h1{font-family:var(--font-display);font-size:clamp(30px,6vw,54px);margin:2px 0 0;line-height:1;text-transform:uppercase}
+.sub{margin:6px 0 0;font-style:italic;color:var(--ink2)}
+.wrap{max-width:1000px;margin:0 auto;padding:0 16px 40px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin:12px 0}
+.chip{border:2px solid var(--line);background:var(--card);padding:6px 12px;font-size:15px;font-weight:700}
+.btn{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--accent);color:#fff;padding:10px 16px;cursor:pointer;min-height:44px;box-shadow:var(--shadow)}
+.btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+.btn.ghost{background:var(--bg2);color:var(--ink)}
+.btn.small{padding:6px 10px;min-height:38px;font-size:14px}
+.panel{border:2px solid var(--line);background:var(--bg2);padding:14px 16px;margin:12px 0}
+.panel h2{font-family:var(--font-display);font-size:20px;margin:0 0 8px;text-transform:uppercase;letter-spacing:1px}
+.row{display:flex;flex-wrap:wrap;gap:10px}.row>*{flex:1 1 180px}
+label{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+input,select,textarea{font:inherit;font-size:16px;padding:9px 10px;border:2px solid var(--line);background:var(--card);color:var(--ink);min-height:44px;width:100%}
+textarea{min-height:120px;resize:vertical;text-transform:none;font-weight:400}
+.status{font-size:14px;color:var(--muted);margin-top:8px;min-height:1.2em}
+.admin{border:2px dashed var(--accent);background:var(--bg2);padding:12px 16px;margin:12px 0;display:none}.admin.on{display:block}
+.admin h2{font-family:var(--font-display);font-size:18px;margin:0 0 6px;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
+details{margin-top:10px}summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border:2px solid var(--gold);display:none;max-width:90vw;z-index:20;text-align:center}
+.lb{position:fixed;inset:0;background:rgba(10,6,5,.9);display:none;align-items:center;justify-content:center;z-index:30;padding:16px}.lb.on{display:flex}
+.lb .dlg{background:var(--card);border:3px solid var(--gold);max-width:480px;width:100%;padding:20px;position:relative;max-height:92vh;overflow:auto}
+.lb h2{font-family:var(--font-display);margin:0 0 10px;text-transform:uppercase;font-size:22px;color:var(--accent)}
+.spin{width:22px;height:22px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes s{to{transform:rotate(360deg)}}
+table{border-collapse:collapse;width:100%;font-size:15px;margin-top:8px}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left}th{background:var(--card)}
+.tablewrap{overflow-x:auto}
+tr.me td{background:color-mix(in srgb,var(--gold) 35%,var(--card))}
+.rank{font-family:var(--font-display);font-size:18px;color:var(--accent)}
+/* ---- mode: moles ---- */
+.field{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:560px;margin:0 auto}
+.hole{position:relative;aspect-ratio:1.15;border-radius:50%/60%;background:radial-gradient(ellipse at 50% 70%,#2b1d14 0,#3d2a1c 55%,transparent 56%);overflow:visible}
+.hole .dirt{position:absolute;left:8%;right:8%;bottom:8%;height:36%;background:#5a3f2a;border-radius:50%;box-shadow:inset 0 -6px 0 rgba(0,0,0,.35)}
+.mole{position:absolute;left:12%;right:12%;bottom:18%;border:0;background:none;padding:0;font:inherit;cursor:pointer;transform:translateY(120%) scale(.9);opacity:0;transition:transform .25s,opacity .2s}
+.mole.up{transform:translateY(0) scale(1);opacity:1}
+.mole .m{background:#8d6748;border:3px solid #4a3323;border-radius:45% 45% 40% 40%;padding:10px 6px 14px;color:#fff;font-weight:700;font-size:clamp(12px,2.2vw,15px);line-height:1.15;text-wrap:balance;box-shadow:0 3px 0 rgba(0,0,0,.4);min-height:60px;display:flex;align-items:center;justify-content:center;text-align:center}
+.mole .m::before{content:'👀';display:block;font-size:14px;line-height:1;margin-bottom:2px}
+.mole.hit .m{background:var(--accent);transform:scale(.85)}
+.mole.bad .m{background:#444}
+/* ---- mode: ducks ---- */
+.pond{position:relative;height:360px;border:3px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#8fd3f4 0,#3a9ad9 60%,#2b78b4 100%);box-shadow:var(--shadow)}
+.wave{position:absolute;left:0;right:0;height:14px;opacity:.35;background:repeating-linear-gradient(90deg,#fff 0 24px,transparent 24px 48px);border-radius:8px}
+.duck{position:absolute;left:-40%;border:0;background:none;padding:0;font:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;will-change:left}
+.duck .bill{font-size:34px;line-height:1;filter:drop-shadow(0 2px 0 rgba(0,0,0,.3))}
+.duck .tag{background:#fffaf0;color:#1a1412;border:2px solid #1a1412;padding:6px 10px;font-weight:700;font-size:clamp(13px,2.2vw,16px);border-radius:8px;box-shadow:0 2px 0 #1a1412;max-width:240px;text-wrap:balance;text-align:center}
+.duck.hit .tag{background:var(--gold)}
+.duck.bad{opacity:.4}
+/* ---- mode: striker ---- */
+.striker{display:grid;grid-template-columns:90px 1fr;gap:16px;align-items:stretch}
+@media(max-width:520px){.striker{grid-template-columns:60px 1fr}}
+.tower{position:relative;border:3px solid var(--line);background:var(--card);border-radius:10px 10px 4px 4px;overflow:hidden;min-height:320px}
+.tower .fill{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(180deg,var(--gold),var(--accent));transition:height .25s}
+.tower .bell{position:absolute;top:6px;left:0;right:0;text-align:center;font-size:30px;line-height:1}
+.tower .bell.ring{animation:ring .6s}
+@keyframes ring{0%,100%{transform:rotate(0)}25%{transform:rotate(-25deg)}75%{transform:rotate(25deg)}}
+.two{display:grid;grid-template-columns:1fr;gap:12px}
+.two .opt{font:inherit;font-weight:700;font-size:clamp(16px,2.6vw,21px);border:3px solid var(--line);background:var(--card);color:var(--ink);padding:18px 14px;cursor:pointer;box-shadow:var(--shadow);min-height:70px;text-wrap:balance}
+.two .opt:first-child{background:var(--b1);color:#fff}.two .opt:last-child{background:var(--b2);color:#fff}
+.two .opt.good{outline:5px solid var(--gold)}.two .opt.badx{opacity:.4}
+.bigclock{font-family:var(--font-display);font-size:34px;text-align:center;color:var(--accent);line-height:1;margin-bottom:8px}
+/* ---- mode: crystal ---- */
+.ball{width:min(260px,70vw);aspect-ratio:1;border-radius:50%;margin:0 auto;background:radial-gradient(circle at 35% 30%,#fff 0,#cfe6ff 18%,#6d4bb3 60%,#2a1650 100%);box-shadow:0 12px 30px rgba(42,22,80,.5),inset 0 0 40px rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;text-align:center;padding:22px;position:relative;animation:glow 3s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 12px 30px rgba(42,22,80,.5),inset 0 0 40px rgba(255,255,255,.35)}50%{box-shadow:0 12px 40px rgba(120,80,200,.7),inset 0 0 60px rgba(255,255,255,.55)}}
+.ball .letters{font-family:var(--font-display);font-size:clamp(22px,4.6vw,34px);letter-spacing:.18em;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);word-break:break-word;line-height:1.2}
+.ball .letters span.blank{opacity:.55}
+.typebox{display:flex;gap:8px;max-width:520px;margin:14px auto 0}
+.typebox input{font-size:20px;text-transform:uppercase;letter-spacing:.1em}
+/* ---- mode: rings ---- */
+.bottles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end;max-width:720px;margin:20px auto 0}
+@media(max-width:560px){.bottles{grid-template-columns:repeat(2,1fr);gap:14px}}
+.bottle{position:relative;border:0;background:none;padding:0;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bottle .neck{width:26px;height:38px;background:#3d9a42;border:3px solid #1a1412;border-bottom:0;border-radius:8px 8px 0 0}
+.bottle .glass{width:72px;height:120px;background:linear-gradient(90deg,#3d9a42,#6dbb70 40%,#3d9a42);border:3px solid #1a1412;border-radius:14px 14px 10px 10px;box-shadow:inset -10px 0 0 rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;position:relative}
+.bottle .glass::after{content:'';position:absolute;top:10px;left:8px;width:10px;height:50px;background:rgba(255,255,255,.35);border-radius:6px}
+.bottle .lbl{background:#fffaf0;color:#1a1412;border:2px solid #1a1412;padding:6px 8px;font-weight:700;font-size:clamp(13px,2.2vw,15px);border-radius:6px;max-width:100%;text-wrap:balance;text-align:center;line-height:1.15}
+.bottle .ring{position:absolute;top:-70px;left:50%;width:54px;height:54px;margin-left:-27px;border:9px solid var(--accent);border-radius:50%;box-shadow:0 2px 0 rgba(0,0,0,.4);opacity:0}
+.bottle.hit .ring{animation:toss .55s forwards}
+.bottle.bad .ring{animation:miss .6s forwards}
+@keyframes toss{0%{opacity:1;transform:translateY(-120px) scale(1.4)}70%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:1;transform:translateY(6px) scale(1)}}
+@keyframes miss{0%{opacity:1;transform:translateY(-120px) scale(1.4)}60%{opacity:1;transform:translateY(10px) rotate(20deg)}100%{opacity:.6;transform:translateY(150px) rotate(60deg)}}
+.bottle.bad .glass{transform:rotate(-8deg);opacity:.6}
+.bottle.hit .glass{box-shadow:0 0 0 5px var(--gold)}
+/* ---- mode: wheel ---- */
+.wheelwrap{position:relative;width:min(440px,92vw);aspect-ratio:1;margin:0 auto}
+.wheel{position:absolute;inset:0;border-radius:50%;border:8px solid var(--accent);box-shadow:inset 0 0 0 6px var(--gold),var(--shadow);animation:spin 14s linear infinite}
+.wheel::before,.wheel::after{content:'';position:absolute;left:50%;top:50%;width:100%;height:6px;background:var(--accent);transform:translate(-50%,-50%);opacity:.6}
+.wheel::after{transform:translate(-50%,-50%) rotate(90deg)}
+.hub{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px;border-radius:50%;background:var(--gold);border:3px solid var(--line)}
+.gondola{position:absolute;left:50%;top:50%;border:0;background:none;padding:0;font:inherit;cursor:pointer;z-index:2}
+.gondola .car{background:var(--card);color:var(--ink);border:3px solid var(--line);border-radius:10px;padding:8px 10px;font-weight:700;font-size:clamp(12px,2.2vw,15px);max-width:150px;text-wrap:balance;text-align:center;box-shadow:var(--shadow);animation:spin 14s linear infinite reverse}
+.gondola:nth-child(1) .car{border-color:var(--b1)}.gondola:nth-child(2) .car{border-color:var(--b2)}.gondola:nth-child(3) .car{border-color:var(--b3)}.gondola:nth-child(4) .car{border-color:var(--b4)}
+.gondola.hit .car{background:var(--gold)}.gondola.bad .car{opacity:.4}
+.wheelwrap.stop .wheel,.wheelwrap.stop .car{animation-play-state:paused}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ---- mode: mirror ---- */
+.maze{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:620px;margin:16px auto 0}
+.mirror{border:0;background:none;padding:0;font:inherit;cursor:pointer}
+.mirror .pane{background:linear-gradient(135deg,#dfe8f2,#b9c7d6 45%,#eef3f8 60%,#c3cfdc);border:6px solid #8d6748;border-radius:14px;padding:22px 12px;min-height:110px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;font-size:clamp(15px,2.5vw,19px);color:#1a1412;text-wrap:balance;box-shadow:var(--shadow);transition:transform .35s}
+.mirror.wobble .pane{animation:wob 2.2s ease-in-out infinite}
+@keyframes wob{0%,100%{transform:skewY(0) scaleX(1)}25%{transform:skewY(-4deg) scaleX(1.06)}50%{transform:skewY(0) scaleY(1.08)}75%{transform:skewY(4deg) scaleX(.94)}}
+.mirror:nth-child(2) .pane{animation-delay:.5s}.mirror:nth-child(3) .pane{animation-delay:1s}.mirror:nth-child(4) .pane{animation-delay:1.5s}
+.mirror.hit .pane{background:var(--gold);animation:none}
+.mirror.bad .pane{opacity:.4;animation:none}
+/* ---- mode: zoo ---- */
+.pen{border:4px solid #8d6748;border-radius:12px;background:#dcecc4;min-height:110px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;font-size:30px;line-height:1;position:relative;box-shadow:var(--shadow)}
+.pen::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 22px,rgba(141,103,72,.25) 22px 26px);pointer-events:none}
+.pen .empty{font-size:15px;color:var(--muted);width:100%;text-align:center;align-self:center}
+.pen span{animation:pop2 .5s ease-out}
+/* ---- game screen ---- */
+#game{display:none}
+#game.on{display:block}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}
+.timer{height:16px;border:2px solid var(--line);background:var(--card);overflow:hidden;margin:6px 0 14px}
+.timer div{height:100%;background:var(--accent);width:100%;transition:width .1s linear}
+.timer.hot div{background:#e04a3f}
+.q{font-family:var(--font-display);font-size:clamp(20px,3.6vw,30px);line-height:1.15;text-align:center;margin:10px 0 18px;text-wrap:balance;min-height:2.3em}
+.balloons{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:520px){.balloons{grid-template-columns:1fr 1fr;gap:12px}}
+.balloon{position:relative;border:0;background:none;cursor:pointer;padding:0;font:inherit;color:#fff;min-height:120px;display:flex;align-items:center;justify-content:center;text-align:center;animation:bob 3s ease-in-out infinite}
+.balloon:nth-child(2){animation-delay:.5s}.balloon:nth-child(3){animation-delay:1s}.balloon:nth-child(4){animation-delay:1.5s}
+.balloon .body{width:100%;max-width:260px;min-height:110px;border-radius:50% 50% 50% 50%/55% 55% 45% 45%;padding:18px 16px;font-weight:700;font-size:clamp(15px,2.4vw,19px);line-height:1.2;text-wrap:balance;box-shadow:inset -12px -10px 0 rgba(0,0,0,.15),0 3px 0 rgba(0,0,0,.35);border:3px solid rgba(0,0,0,.35);position:relative;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.balloon .body::after{content:'';position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top:12px solid inherit;border-top-color:inherit}
+.balloon .string{position:absolute;bottom:-26px;left:50%;width:2px;height:26px;background:var(--line);opacity:.5}
+.balloon:nth-child(1) .body{background:var(--b1);border-top-color:var(--b1)}.balloon:nth-child(2) .body{background:var(--b2);border-top-color:var(--b2)}.balloon:nth-child(3) .body{background:var(--b3);border-top-color:var(--b3)}.balloon:nth-child(4) .body{background:var(--b4);color:#1a1412;border-top-color:var(--b4)}
+.balloon:hover .body{transform:scale(1.04)}
+.balloon.pop .body{animation:pop .45s forwards}
+.balloon.sag .body{animation:sag .6s forwards}
+.balloon.dim{opacity:.35;pointer-events:none}
+.balloons.locked .balloon{pointer-events:none}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.25)}41%{transform:scale(1.25);opacity:1}100%{transform:scale(0);opacity:0}}
+@keyframes sag{0%{transform:scale(1)}100%{transform:scale(.8) translateY(30px) rotate(-8deg);opacity:.5}}
+.fb{text-align:center;font-family:var(--font-display);font-size:26px;min-height:1.4em;margin-top:14px;color:var(--accent)}
+.count{font-family:var(--font-display);font-size:96px;text-align:center;line-height:1;padding:40px 0;color:var(--accent);animation:pop2 .9s ease-out}
+@keyframes pop2{0%{transform:scale(.3);opacity:0}30%{transform:scale(1.1);opacity:1}100%{transform:scale(1)}}
+.result{text-align:center;padding:14px 0}
+.result .big{font-family:var(--font-display);font-size:48px;color:var(--accent);line-height:1}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:25;overflow:hidden}
+.confetti i{position:absolute;top:-10px;width:10px;height:16px;animation:fall 1.8s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.qrow{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 70px 90px 44px;gap:6px;align-items:center;margin-top:6px}
+.crow{display:grid;grid-template-columns:3fr 1fr 44px;gap:6px;align-items:center;margin-top:6px}
+.crow input{min-height:40px;padding:6px 8px;font-size:14px}
+.crow .x{font:inherit;border:2px solid var(--line);background:var(--card);color:var(--accent);font-weight:700;min-height:40px;cursor:pointer}
+.qrow input,.qrow select{min-height:40px;padding:6px 8px;font-size:14px}
+.qrow .x{font:inherit;border:2px solid var(--line);background:var(--card);color:var(--accent);font-weight:700;min-height:40px;cursor:pointer}
+@media(max-width:800px){.qrow{grid-template-columns:1fr 1fr;} .qrow input:first-child{grid-column:1/-1}}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15100f;--bg2:#1f1816;--ink:#f4e9d2;--ink2:#e2d4b8;--muted:#b5a48d;--line:#f4e9d2;--card:#241c19;--shadow:0 2px 0 #000}}
+:root[data-theme="dark"]{--bg:#15100f;--bg2:#1f1816;--ink:#f4e9d2;--ink2:#e2d4b8;--muted:#b5a48d;--line:#f4e9d2;--card:#241c19;--shadow:0 2px 0 #000}
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<header>
+  <div class="kicker" id="hKicker">Client Service Appreciation Week</div>
+  <h1 id="hTitle">Balloon Pop Trivia</h1>
+  <p class="sub" id="hSub">Pop the right balloon before the clock runs out. Fastest and sharpest climb the board.</p>
+</header>
+<div class="wrap">
+  <div class="bar" id="lobbyBar">
+    <span class="chip" id="cRound">Round: —</span>
+    <button class="btn" id="btnPlay">Play</button>
+    <span class="chip" id="cMine" style="display:none"></span>
+  </div>
+  <div id="notice" class="status" style="text-align:center"></div>
+
+  <section id="game">
+    <div class="hud"><span class="chip" id="gQ">Q 1 / 10</span><span class="chip" id="gScore">0 pts</span><span class="chip" id="gStreak" style="display:none"></span></div>
+    <div class="timer" id="gTimer"><div></div></div>
+    <div id="gStage"></div>
+    <div class="fb" id="gFb"></div>
+  </section>
+
+  <section class="admin" id="admin">
+    <h2>Admin panel</h2>
+    <details open>
+      <summary>Round, code and status</summary>
+      <div class="row" style="align-items:flex-end">
+        <label>Quick set from the schedule
+          <select id="aSched"><option value="">— pick a day —</option></select>
+        </label>
+        <label>Current round (leaderboard is per round) <input id="aRound" placeholder="Monday"></label>
+        <label>Questions from
+          <select id="aQday"><option value="auto">Same day as the round name</option><option value="mon">Monday's set</option><option value="tue">Tuesday's set</option><option value="wed">Wednesday's set</option><option value="thu">Thursday's set</option><option value="fri">Friday's set</option><option value="any">Any day</option></select>
+        </label>
+        <label>Game for this round
+          <select id="aMode">
+            <option value="balloon">🎈 Balloon Pop</option>
+            <option value="rings">🎯 Ring Toss</option>
+            <option value="wheel">🎡 Ferris Wheel</option>
+            <option value="mirror">🪞 Funhouse Mirror Maze</option>
+            <option value="zoo">🐐 Petting Zoo (60-second speed round)</option>
+            <option value="moles">🔨 Whack-a-Mole (extra)</option>
+            <option value="ducks">🦆 Duck Pond (extra)</option>
+            <option value="striker">🔔 High Striker (extra, speed round)</option>
+            <option value="crystal">🔮 Crystal Ball (extra, type the answer)</option>
+          </select>
+        </label>
+        <label>Code to play (blank = no code needed) <input id="aCode" placeholder="optional"></label>
+        <label style="flex-direction:row;align-items:center;gap:8px;text-transform:none;font-size:15px;flex:0 1 auto"><input type="checkbox" id="aOpen" style="width:22px;height:22px;min-height:0"> Game open</label>
+        <button class="btn small" id="aRoundSave" style="flex:0 1 auto">Save</button>
+      </div>
+      <div class="status" id="aStatus"></div>
+    </details>
+    <details>
+      <summary>Game settings and tickets</summary>
+      <div class="row" style="margin-top:8px">
+        <label>Questions per game <input id="aPerGame" type="number" min="3" max="50"></label>
+        <label>Speed-round length in seconds (Petting Zoo / High Striker) <input id="aSpeed" type="number" min="20" max="180"></label>
+        <label>Seconds per question <input id="aSecs" type="number" min="5" max="60"></label>
+        <label>Points per correct <input id="aPts" type="number" min="10" max="1000"></label>
+        <label>Max speed bonus <input id="aBonus" type="number" min="0" max="1000"></label>
+        <label>Wrong answer penalty <input id="aPen" type="number" min="0" max="1000"></label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label>Tickets for playing <input id="aBaseT" type="number" min="0" max="50"></label>
+        <label style="flex:2 1 260px">Extra tickets by rank, 1st to 10th (comma separated) <input id="aRankT" placeholder="10,9,8,7,6,5,4,3,2,1"></label>
+        <label>Leaderboard size <input id="aTop" type="number" min="5" max="100"></label>
+      </div>
+      <div class="row" style="margin-top:10px;align-items:center"><button class="btn" id="aSetSave" style="flex:0 1 auto">Save settings</button><span class="status" id="aSetStatus" style="margin:0"></span></div>
+    </details>
+    <details>
+      <summary>Look and feel</summary>
+      <div class="row" style="margin-top:8px">
+        <label>Small line above title <input id="aKicker"></label>
+        <label>Big title (blank = the game's name) <input id="aTitle"></label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label style="flex:2 1 260px">Subtitle (blank = the game's own line) <input id="aSub"></label>
+        <label>Display font
+          <select id="aFont">
+            <option value="'Rye',serif">Rye (carnival)</option><option value="'Creepster',cursive">Creepster</option><option value="'Bangers',cursive">Bangers</option><option value="'Mountains of Christmas',cursive">Mountains of Christmas</option><option value="'Pacifico',cursive">Pacifico</option><option value="'Fredoka',sans-serif">Fredoka</option><option value="'Cinzel',serif">Cinzel</option>
+          </select>
+        </label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label style="flex:0 1 120px">Accent <input id="aAccent" type="color" style="height:44px;padding:2px"></label>
+        <label style="flex:0 1 120px">Page <input id="aPageBg" type="color" style="height:44px;padding:2px"></label>
+        <label style="flex:0 1 110px">Balloon 1 <input id="aB1" type="color" style="height:44px;padding:2px"></label>
+        <label style="flex:0 1 110px">Balloon 2 <input id="aB2" type="color" style="height:44px;padding:2px"></label>
+        <label style="flex:0 1 110px">Balloon 3 <input id="aB3" type="color" style="height:44px;padding:2px"></label>
+        <label style="flex:0 1 110px">Balloon 4 <input id="aB4" type="color" style="height:44px;padding:2px"></label>
+        <label style="flex-direction:row;align-items:center;gap:8px;text-transform:none;font-size:15px;flex:0 1 auto"><input type="checkbox" id="aStripes" style="width:22px;height:22px;min-height:0"> Striped bars</label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label style="flex:2 1 260px">Supervisors (comma separated) <input id="aSups"></label>
+        <label>Allowed email domains (blank = any) <input id="aDomains" placeholder="americor.com"></label>
+      </div>
+      <div class="row" style="margin-top:10px;align-items:center"><button class="btn" id="aLookSave" style="flex:0 1 auto">Save look</button><span class="status" id="aLookStatus" style="margin:0"></span></div>
+    </details>
+    <details>
+      <summary>Multiple-choice questions (<span id="aQCount">0</span>)</summary>
+      <div style="font-size:14px;color:var(--muted)">Used by Ring Toss, Mirror Maze, Balloon Pop, Whack-a-Mole and the others. Each question is assigned to a day (10 per day) so nothing repeats during the week; players get their day's 10 in a shuffled order with shuffled answers. A game only borrows from "Any day" or other days if its own set runs short.</div>
+      <div id="aQs"></div>
+      <div class="row" style="margin-top:8px;align-items:center"><button class="btn ghost small" id="aQAdd" style="flex:0 1 auto">+ Add question</button><button class="btn" id="aQSave" style="flex:0 1 auto">Save questions</button><button class="btn ghost small" id="aQBuiltin" style="flex:0 1 auto">Restore the built-in 40</button><span class="status" id="aQStatus" style="margin:0"></span></div>
+      <details>
+        <summary>Bulk import (paste)</summary>
+        <div style="font-size:14px;color:var(--muted)">One question per line: <code>Question | Answer A | Answer B | Answer C | Answer D | correct letter | day (mon, tue, wed, thu, fri, sat, sun or any)</code>. Pasting from Excel with tabs also works.</div>
+        <textarea id="aBulk" placeholder="What is the max number of days a client can delay a first draft? | 30 | 45 | 60 | 90 | B"></textarea>
+        <div class="row" style="margin-top:8px;align-items:center"><button class="btn ghost small" id="aBulkAdd" style="flex:0 1 auto">Add these to the bank</button><button class="btn ghost small" id="aBulkReplace" style="flex:0 1 auto">Replace the whole bank</button><span class="status" id="aBulkStatus" style="margin:0"></span></div>
+      </details>
+    </details>
+    <details>
+      <summary>Madame Zelda's Crystal Ball questions (<span id="aCCount">0</span>)</summary>
+      <div style="font-size:14px;color:var(--muted)">Only the Crystal Ball uses this list. Players type the one-word answer as its letters reveal. Keep answers to a single word (letters and numbers only).</div>
+      <div id="aCs"></div>
+      <div class="row" style="margin-top:8px;align-items:center"><button class="btn ghost small" id="aCAdd" style="flex:0 1 auto">+ Add</button><button class="btn" id="aCSave" style="flex:0 1 auto">Save Crystal Ball questions</button><button class="btn ghost small" id="aCBuiltin" style="flex:0 1 auto">Restore the built-in 20</button><span class="status" id="aCStatus" style="margin:0"></span></div>
+    </details>
+    <details>
+      <summary>Results, export and reset</summary>
+      <div class="row" style="margin-top:8px;align-items:center">
+        <label style="flex:0 1 220px">Round to view <select id="aViewRound"></select></label>
+        <button class="btn ghost" id="aExport" style="flex:0 1 auto">Export this round (CSV)</button>
+        <button class="btn ghost" id="aExportAll" style="flex:0 1 auto">Export all rounds (CSV)</button>
+        <button class="btn" id="aReset" style="flex:0 1 auto;background:var(--accent2)">Delete all scores</button>
+        <span class="status" id="aResStatus" style="margin:0;flex:1 1 200px"></span>
+      </div>
+      <div class="tablewrap" id="aResults"></div>
+    </details>
+  </section>
+
+  <section class="panel" id="board">
+    <h2 id="boardTitle">Leaderboard</h2>
+    <div class="tablewrap" id="boardTable"></div>
+  </section>
+</div>
+<footer>One play per person per round. Ticket counts are for the drawing and are final once the round closes. <a href="#" id="adminLink" style="color:var(--accent)">Admin sign-in</a></footer>
+
+<div class="toast" id="toast"></div>
+<div class="confetti" id="confetti"></div>
+
+<div class="lb" id="playDlg" role="dialog" aria-modal="true">
+  <div class="dlg">
+    <h2>Step right up</h2>
+    <div id="pStep1" style="display:none"><label>Today's code <input id="pCode" autocomplete="off" autocapitalize="characters"></label><div class="row" style="margin-top:10px"><button class="btn" id="pNext">Continue</button><button class="btn ghost" id="pCancel1">Cancel</button></div></div>
+    <div id="pStep2">
+      <label>Your name <input id="pName" maxlength="60" autocomplete="name" placeholder="First and last"></label>
+      <label style="margin-top:8px">Your supervisor <select id="pSup"></select></label>
+      <label style="margin-top:8px">Work email <input id="pEmail" type="email" autocomplete="email" placeholder="you@americor.com"></label>
+      <div class="status" id="pStatus"></div>
+      <div id="pRules" style="font-size:14px;color:var(--ink2);margin-top:8px"></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="pGo">Start</button><button class="btn ghost" id="pCancel2">Cancel</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="lb" id="resultDlg" role="dialog" aria-modal="true">
+  <div class="dlg">
+    <div class="result">
+      <div style="font-size:14px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)">Final score</div>
+      <div class="big" id="rScore">0</div>
+      <div id="rDetail" style="margin-top:8px"></div>
+      <div id="rRank" style="margin-top:10px;font-weight:700"></div>
+      <div class="status" id="rStatus"></div>
+    </div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="rClose">See the leaderboard</button></div>
+  </div>
+</div>
+
+<div class="lb" id="adminDlg" role="dialog" aria-modal="true">
+  <div class="dlg">
+    <h2>Admin sign-in</h2>
+    <label>Email <input id="dEmail" type="email" autocomplete="username"></label>
+    <label style="margin-top:8px">Password <input id="dPass" type="password" autocomplete="current-password"></label>
+    <div class="status" id="dStatus"></div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="dGo">Sign in</button><button class="btn ghost" id="dCancel">Cancel</button><button class="btn ghost" id="dOut" style="display:none">Sign out</button></div>
+  </div>
+</div>
+
+<script type="module">
+// =====================================================================
+//  Firebase config (same project as the gallery and the booths)
+// =====================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCmgCjG85EYxktlMjnwrDBtq-vjeIVawfY",
+  authDomain: "carnival-of-screams-531ce.firebaseapp.com",
+  projectId: "carnival-of-screams-531ce",
+  appId: "1:661234346389:web:e47bcfb77214a7a4cbae9c"
+};
+// =====================================================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, onSnapshot, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const MODES = {
+  balloon:{ name:'Balloon Pop', sub:'Pop the right balloon before the clock runs out.', icon:'🎈' },
+  rings:  { name:'Ring Toss', sub:'Land your ring on the bottle with the right answer.', icon:'🎯' },
+  wheel:  { name:'Ferris Wheel', sub:'The answers ride the wheel. Tap the right gondola as it comes around.', icon:'🎡' },
+  mirror: { name:'Funhouse Mirror Maze', sub:'The mirrors stretch, wobble and swap places. Keep your eye on the right answer.', icon:'🪞' },
+  zoo:    { name:'Petting Zoo', sub:'Sixty seconds. Every right answer feeds another animal into your pen.', icon:'🐐' },
+  moles:  { name:'Whack-a-Mole', sub:'The answers keep popping up. Whack the right mole before it ducks.', icon:'🔨' },
+  ducks:  { name:'Duck Pond', sub:'Answer right, then pick a duck from the pond. Every duck hides a bonus that shrinks as the clock runs.', icon:'🦆' },
+  striker:{ name:'High Striker', sub:'Sixty seconds, two choices at a time. Ring the bell.', icon:'🔔' },
+  crystal:{ name:"Madame Zelda's Crystal Ball", sub:'One word appears letter by letter. Type it before it fully reveals.', icon:'🔮' },
+};
+const SCHEDULE = [
+  {round:'Monday',    mode:'rings',   date:'2026-10-05'},
+  {round:'Tuesday',   mode:'mirror',  date:'2026-10-06'},
+  {round:'Wednesday', mode:'balloon', date:'2026-10-07'},
+  {round:'Thursday',  mode:'crystal', date:'2026-10-08'},
+  {round:'Friday',    mode:'moles',   date:'2026-10-09'},
+  {round:'Saturday',  mode:'mirror',  date:'2026-10-10', qday:'tue'},
+  {round:'Sunday',    mode:'balloon', date:'2026-10-11', qday:'wed'},
+];
+const DEFAULTS = {
+  round:'Monday', open:true, mode:'rings', speedSecs:60, perGame:10, kicker:'Client Service Appreciation Week', title:'', sub:'',
+  font:"'Rye',serif", accent:'#b3261e', pageBg:'#f4e9d2', stripes:true, b1:'#e04a3f', b2:'#2b6fc2', b3:'#3d9a42', b4:'#e9b949',
+  sups:[], domains:[], secs:15, pts:100, bonus:50, pen:25, baseT:1, rankT:[10,9,8,7,6,5,4,3,2,1], top:20,
+  questions:[
+    {q:'What is Americor\'s primary debt relief process?', o:['Refinancing','Settlement','Bankruptcy','Credit repair'], c:1, tag:'fri'},
+    {q:'Which debt is typically unsecured?', o:['Credit card','Mortgage','Auto loan','Home equity loan'], c:0, tag:'fri'},
+    {q:'Who does Americor negotiate with on a client\'s behalf?', o:['Employers','Creditors','Credit bureaus','Payroll teams'], c:1, tag:'wed'},
+    {q:'Where do clients build funds for settlements?', o:['Dedicated account','Credit card','Payroll account','Rewards account'], c:0, tag:'wed'},
+    {q:'What do clients regularly put into their dedicated account?', o:['Deposits','Reward points','Credit limits','Loan offers'], c:0, tag:'fri'},
+    {q:'Who must approve a proposed settlement?', o:['The client','The employer','The credit bureau','The agent'], c:0, tag:'fri'},
+    {q:'What pays an approved settlement?', o:['Dedicated funds','A new credit card','A tax refund','Reward points'], c:0, tag:'wed'},
+    {q:'What does Americor charge only after a debt is settled?', o:['Enrollment charge','Settlement fee','Negotiation deposit','Offer charge'], c:1, tag:'tue'},
+    {q:'What can continue to build on an unpaid balance, along with fees?', o:['Interest','Portal visits','Account notes','Credit reports'], c:0, tag:'tue'},
+    {q:'Can an agent guarantee a settlement date?', o:['Yes','Only by email','Only with approval','No'], c:3, tag:'mon'},
+    {q:'Clients can track their progress in the app or the Client what?', o:['Portal','Calabrio','PATH','Five9'], c:0, tag:'fri'},
+    {q:'Is a Credit9 loan guaranteed?', o:['Yes','No','After one deposit','After six months'], c:1, tag:'tue'},
+    {q:'A client wants to remove a debt. What should happen before processing?', o:['Discovery','Immediate removal','End the call','Transfer the call'], c:0, tag:'wed'},
+    {q:'What should an agent explore before recommending a next step?', o:['Client\'s reason','Agent\'s preference','Call length','Agent\'s schedule'], c:0, tag:'wed'},
+    {q:'In STEER, what follows Explore?', o:['Educate','Recommend','Slow Down','Tune In'], c:0, tag:'tue'},
+    {q:'In STEER, what follows Educate?', o:['Tune In','Recommend','Explore','Slow Down'], c:1, tag:'fri'},
+    {q:'In Driver Training, who leads and guides the conversation?', o:['Driver','Passenger','Observer','Bystander'], c:0, tag:'fri'},
+    {q:'Should an agent give a client legal advice?', o:['Yes','No','Only on summons calls','Only in writing'], c:1, tag:'tue'},
+    {q:'What should be documented after a client calls in?', o:['PATH note','Personal reminder','Nothing','Calendar event'], c:0, tag:'mon'},
+    {q:'Before a deposit change that could negatively affect the program, what must the agent provide?', o:['Required disclaimer','Loan offer','Settlement date','Credit score'], c:0, tag:'tue'},
+    {q:'Who is our VP of Client Services?', o:['Travis Lund','Dillon Zent','Rasheeda James','Sarah Benton'], c:2, tag:'wed'},
+    {q:'Who founded Americor?', o:['Benny Hill','David Norris','Benny Ganatra','Travis Lund'], c:2, tag:'tue'},
+    {q:'Who is Americor\'s Executive Chairman?', o:['May Chan','Benny Ganatra','David Norris','Dillon Zent'], c:1, tag:'mon'},
+    {q:'Who is Americor\'s CEO?', o:['David Norris','Benny Ganatra','May Chan','Sarah Benton'], c:0, tag:'wed'},
+    {q:'Who is Americor\'s COO?', o:['Sarah Benton','May Chan','Rasheeda James','David Norris'], c:1, tag:'mon'},
+    {q:'Where is Americor headquartered?', o:['Boise, Idaho','Dallas, Texas','Irvine, California','Phoenix, Arizona'], c:2, tag:'mon'},
+    {q:'What year was Americor founded?', o:['2005','2008','2015','2020'], c:1, tag:'tue'},
+    {q:'About how many employees does Americor have?', o:['100+','5000+','1,000+','10,000+'], c:2, tag:'mon'},
+    {q:'Who is Americor\'s national celebrity spokesperson?', o:['Ryan Seacrest','Mario Lopez','Steve Harvey','Mark Wahlberg'], c:1, tag:'fri'},
+    {q:'Which of these is a secured debt?', o:['Credit card','Mortgage','Medical bill','Store card'], c:1, tag:'tue'},
+    {q:'Who makes the final call on accepting a settlement offer?', o:['The client','The creditor','The agent','The credit bureau'], c:0, tag:'fri'},
+    {q:'At what point is Americor\'s fee charged?', o:['At enrollment','After the debt settles','When the first deposit posts','When an offer arrives'], c:1, tag:'mon'},
+    {q:'A client asks you to promise a settlement will be done by Friday. Best response?', o:['Promise it','Say it is likely','Explain that dates cannot be guaranteed','Transfer the call'], c:2, tag:'fri'},
+    {q:'A client asks whether they should respond to a lawsuit. What do you do?', o:['Tell them not to respond','Say you cannot give legal advice and direct them to the right resource','Give them legal advice','Ignore the question'], c:1, tag:'wed'},
+    {q:'In STEER, which step comes first?', o:['Explore','Educate','Slow Down','Recommend'], c:2, tag:'wed'},
+    {q:'In STEER, which step is about listening closely to what the client is really saying?', o:['Tune In','Recommend','Educate','Explore'], c:0, tag:'wed'},
+    {q:'What is the last step of STEER?', o:['Explore','Tune In','Educate','Recommend'], c:3, tag:'tue'},
+    {q:'In Driver Training, an agent who only reacts to what the client says is acting as the what?', o:['Driver','Passenger','Coach','Navigator'], c:1, tag:'mon'},
+    {q:'Where should call notes be recorded?', o:['PATH','A sticky note','Personal email','Calabrio'], c:0, tag:'mon'},
+    {q:'A client wants to lower a deposit in a way that could hurt the program. What must the agent do first?', o:['Lower it right away','Give the required disclaimer','Offer a loan','Close the account'], c:1, tag:'mon'}
+  ],
+  crystal:[
+    {q:'What do clients regularly put into their dedicated account?', a:'DEPOSITS'},
+    {q:'What kind of account holds funds for future settlements?', a:'DEDICATED'},
+    {q:'Who does Americor negotiate with on a client\'s behalf?', a:'CREDITORS'},
+    {q:'What does Americor do with creditors to seek a resolution?', a:'NEGOTIATE'},
+    {q:'What is an agreement to resolve a debt for less than the full balance called?', a:'SETTLEMENT'},
+    {q:'Who must approve a proposed settlement?', a:'CLIENT'},
+    {q:'Credit card debt is generally what type of debt?', a:'UNSECURED'},
+    {q:'What can continue to build on an unpaid balance, along with fees?', a:'INTEREST'},
+    {q:'What does Americor charge only after a debt is settled?', a:'FEE'},
+    {q:'Clients can track their progress in the app or Client ______.', a:'PORTAL'},
+    {q:'The first STEER step is "Slow ____."', a:'DOWN'},
+    {q:'The second STEER step is "Tune ____."', a:'IN'},
+    {q:'Which STEER step helps uncover why a client wants to remove a debt?', a:'EXPLORE'},
+    {q:'Which STEER step explains how a decision could affect the client\'s program?', a:'EDUCATE'},
+    {q:'Which STEER step comes after Educate?', a:'RECOMMEND'},
+    {q:'In Driver Training, who leads and guides the conversation?', a:'DRIVER'},
+    {q:'What do we call the role that mainly reacts instead of guiding the conversation?', a:'PASSENGER'},
+    {q:'A debt removal request should trigger ______ before processing.', a:'DISCOVERY'},
+    {q:'To uncover a client\'s concerns, we need to ask good ______.', a:'QUESTIONS'},
+    {q:'After understanding the client\'s needs, the agent should ______ them toward an informed decision.', a:'GUIDE'}
+  ]
+};
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s);
+const ls = { get:k=>{try{return localStorage.getItem(k)}catch(e){return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}} };
+function toast(msg, ms){ const t=$('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(toast._t); toast._t=setTimeout(()=>t.style.display='none', ms||3500); }
+const emailKey = e => e.trim().toLowerCase().replace(/[^a-z0-9@._+-]/g,'').replace(/\./g,'(dot)');
+const roundKey = r => String(r||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40) || 'round';
+const shortName = n => { const p = String(n||'').trim().split(/\s+/); return p.length > 1 ? p[0] + ' ' + p[p.length-1][0] + '.' : p[0] || ''; };
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+// light obfuscation of the correct index so it is not readable at a glance in the data
+const enc = (c, i) => btoa('k' + ((c + i * 7 + 3) % 4) + ':' + Math.random().toString(36).slice(2,6));
+const dec = (s, i) => { try { const v = +atob(s).slice(1,2); return ((v - i*7 - 3) % 4 + 8) % 4; } catch(e){ return 0; } };
+
+let db=null, auth=null, uid=null, isAdmin=false;
+let PUB = JSON.parse(JSON.stringify(DEFAULTS));
+let scores = [];        // current round
+let played = null;      // {score,timeMs} if this device/email already played this round
+let adminDirty = false;
+
+// ---------------- look ----------------
+function applyLook(){
+  $('hKicker').textContent=PUB.kicker; $('hTitle').textContent=PUB.title; $('hSub').textContent=PUB.sub; document.title=PUB.title;
+  const r=document.documentElement.style; r.setProperty('--accent',PUB.accent); r.setProperty('--accent2',PUB.accent); r.setProperty('--font-display',PUB.font); r.setProperty('--bg',PUB.pageBg);
+  ['b1','b2','b3','b4'].forEach(k=>r.setProperty('--'+k,PUB[k]));
+  document.querySelectorAll('.stripe').forEach(e=>e.classList.toggle('off',PUB.stripes===false));
+  const sel=$('pSup'); sel.innerHTML=''; (PUB.sups.length?PUB.sups:['(no supervisors set)']).forEach(x=>{ const o=document.createElement('option'); o.textContent=x; sel.appendChild(o); });
+  const M = MODES[PUB.mode] || MODES.balloon;
+  $('cRound').textContent='Round: '+PUB.round+' · '+M.icon+' '+M.name; $('boardTitle').textContent='Leaderboard · '+PUB.round+' · '+M.name;
+  $('hTitle').textContent = PUB.title || M.name; if (!PUB.sub) $('hSub').textContent = M.sub;
+  $('pRules').textContent = ((PUB.mode==='striker'||PUB.mode==='zoo') ? PUB.speedSecs+' seconds, as many questions as you can. '+PUB.pts+' points per correct; wrong answers cost '+PUB.pen+'. '
+    : PUB.mode==='crystal' ? PUB.perGame+' answers to guess, '+(PUB.secs*2)+' seconds each. Up to '+(PUB.pts+PUB.bonus)+' points each; fewer letters revealed means more points. Wrong guesses cost '+PUB.pen+'. '
+    : PUB.perGame+' questions, '+PUB.secs+' seconds each. '+PUB.pts+' points per correct answer plus up to '+PUB.bonus+' for speed; wrong answers cost '+PUB.pen+'. ')
+    + PUB.baseT+' ticket for playing, extra tickets by rank for the daily top 10.';
+  $('btnPlay').style.display = (PUB.open && !played) ? '' : 'none';
+  $('notice').textContent = PUB.open ? '' : 'The game is closed right now. Check back later.';
+  if (played) { $('cMine').style.display=''; $('cMine').textContent='You played this round: '+played.score+' pts'; } else $('cMine').style.display='none';
+}
+function ticketsFor(rank){ const base=+PUB.baseT||0; const rt=(PUB.rankT||[])[rank-1]||0; return base + (rank<=10 ? rt : 0); }
+function rankScores(list){ return list.slice().sort((a,b)=> (b.score-a.score) || (a.timeMs-b.timeMs) || (a.at-b.at)); }
+function renderBoard(){
+  const list = rankScores(scores); const top = list.slice(0, PUB.top||20);
+  let h = '<table><tr><th>#</th><th>Name</th><th>Supervisor</th><th>Score</th><th>Time</th><th>Tickets</th></tr>';
+  top.forEach((s,i)=>{ const me = uid && s.uid===uid; h += '<tr'+(me?' class="me"':'')+'><td class="rank">'+(i+1)+'</td><td>'+esc(shortName(s.name))+'</td><td>'+esc(s.sup)+'</td><td>'+s.score+'</td><td>'+(s.timeMs/1000).toFixed(1)+'s</td><td>'+ticketsFor(i+1)+'</td></tr>'; });
+  $('boardTable').innerHTML = h + '</table>' + (list.length ? '<div class="status">'+list.length+' played so far this round.</div>' : '<div class="status">Nobody has played this round yet. Be first.</div>');
+}
+
+// ---------------- play flow ----------------
+$('btnPlay').addEventListener('click', ()=>{
+  const needCode = !!PUB.hasCode; $('pStep1').style.display = needCode?'':'none'; $('pStep2').style.display = needCode?'none':'';
+  const n=ls.get('bp-name'); if(n) $('pName').value=n; const e=ls.get('bp-email'); if(e) $('pEmail').value=e; const s=ls.get('bp-sup'); if(s&&PUB.sups.includes(s)) $('pSup').value=s;
+  $('pStatus').textContent=''; $('playDlg').classList.add('on');
+});
+['pCancel1','pCancel2'].forEach(id=>$(id).addEventListener('click',()=>$('playDlg').classList.remove('on')));
+$('pNext').addEventListener('click',()=>{ if(!$('pCode').value.trim()) return toast('Enter the code.'); $('pStep1').style.display='none'; $('pStep2').style.display=''; });
+$('pGo').addEventListener('click', async ()=>{
+  const name=$('pName').value.trim(), email=$('pEmail').value.trim().toLowerCase();
+  if(!name) return $('pStatus').textContent='Enter your name.';
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return $('pStatus').textContent='Enter a valid work email.';
+  if(PUB.domains.length && !PUB.domains.some(d=>email.endsWith('@'+d.toLowerCase()))) return $('pStatus').textContent='Use your work email ('+PUB.domains.join(', ')+').';
+  if(!PUB.sups.length) return $('pStatus').textContent='No supervisors are set up yet. Tell an admin.';
+  if(bankForRound().length < 3) return $('pStatus').textContent='Not enough questions set up for this game yet. Tell an admin.';
+  ls.set('bp-name',name); ls.set('bp-email',email); ls.set('bp-sup',$('pSup').value);
+  // already played? (email check happens server-side at the end; device check now)
+  try { const dv = await getDoc(doc(db,'qdevices',roundKey(PUB.round)+'__'+uid)); if (dv.exists()) { played = dv.data(); applyLook(); return $('pStatus').textContent='This device already played this round.'; } } catch(e){}
+  try { const ex = await getDoc(doc(db,'scores',roundKey(PUB.round)+'__'+emailKey(email))); if (ex.exists()) { return $('pStatus').textContent='That email has already played this round.'; } } catch(e){}
+  $('playDlg').classList.remove('on'); startGame({name, email, sup:$('pSup').value, code:$('pCode').value.trim()});
+});
+
+let G = null;
+const DAYKEYS=['mon','tue','wed','thu','fri','sat','sun'];
+function roundDay(){ if (PUB.qday && PUB.qday!=='auto') return PUB.qday; const r=String(PUB.round||'').toLowerCase(); return DAYKEYS.find(k=>r.startsWith(k)) || ''; }
+function bankForRound(){
+  if (PUB.mode==='crystal') return (PUB.crystal||[]).map((q,i)=>({i, q:q.q, short:q.a, o:[q.a,'—','—','—'], c:0}));
+  const all = PUB.questions.map((q,i)=>Object.assign({i},q)); const d = roundDay();
+  const mine = all.filter(q=>q.tag===d), any = all.filter(q=>!q.tag || q.tag==='any'), rest = all.filter(q=>q.tag && q.tag!=='any' && q.tag!==d);
+  return shuffle(mine).concat(shuffle(any)).concat(shuffle(rest));   // today's questions first, then unassigned, then other days' only if needed
+}
+function startGame(player){
+  const bank = bankForRound();
+  if (bank.length<3) { toast(PUB.mode==='crystal' ? 'Crystal Ball needs at least 3 questions in its list.' : 'The question bank is empty.', 6000); return; }
+  const picked = bank.slice(0, Math.min(PUB.perGame, bank.length));
+  G = { player, qs:picked, idx:0, score:0, correct:0, streak:0, best:0, t0:0, total:0, answered:false };
+  $('lobbyBar').style.display='none'; $('board').style.display='none'; $('admin').style.display='none'; $('game').classList.add('on');
+  $('gStreak').style.display='none';
+  window.scrollTo({top:0});
+  countdown(3);
+}
+function countdown(n){
+  if (n===0) { G.t0 = performance.now(); const m = PUB.mode||'balloon'; (m==='moles'?showMoles: m==='ducks'?showDucks: m==='striker'||m==='zoo'?startStriker: m==='crystal'?showCrystal: m==='rings'?showRings: m==='wheel'?showWheel: m==='mirror'?showMirror: showQuestion)(); return; }
+  $('gStage').innerHTML = '<div class="count">'+n+'</div>'; $('gFb').textContent = n===3 ? 'Get ready…' : '';
+  setTimeout(()=>countdown(n-1), 900);
+}
+let timerId=null, qStart=0;
+function qOpts(q){ const ci=(typeof q.c==='number')?q.c:dec(q.k,q.i); return shuffle(q.o.map((t,i)=>({t, ok:i===ci}))); }
+function hud(){ $('gQ').textContent='Q '+(G.idx+1)+' / '+G.qs.length; $('gScore').textContent=G.score+' pts'; $('gStreak').style.display=G.streak>=3?'':'none'; $('gStreak').textContent='🔥 '+G.streak+' streak'; }
+function runTimer(secs, onEnd){ qStart=performance.now(); const tb=$('gTimer'); tb.classList.remove('hot'); tb.firstElementChild.style.width='100%'; clearInterval(timerId);
+  timerId=setInterval(()=>{ const el=(performance.now()-qStart)/1000, left=Math.max(0,secs-el); tb.firstElementChild.style.width=(left/secs*100)+'%'; if(left<secs*0.3) tb.classList.add('hot'); if(left<=0){ clearInterval(timerId); onEnd(); } },100); }
+function scoreHit(ok, elapsedFrac){
+  if (ok) { const bonus=Math.round(PUB.bonus*Math.max(0,1-elapsedFrac)); G.score+=PUB.pts+bonus; G.correct++; G.streak++; G.best=Math.max(G.best,G.streak); $('gFb').textContent='+'+(PUB.pts+bonus)+(G.streak>=3?'  🔥':''); if(G.streak && G.streak%3===0) confetti(); }
+  else { G.score=Math.max(0,G.score-PUB.pen); G.streak=0; $('gFb').textContent='−'+PUB.pen; }
+  $('gScore').textContent=G.score+' pts';
+}
+function nextMode(){ G.idx++; if (G.idx < G.qs.length) { const m=PUB.mode||'balloon'; (m==='moles'?showMoles: m==='ducks'?showDucks: m==='crystal'?showCrystal: m==='rings'?showRings: m==='wheel'?showWheel: m==='mirror'?showMirror: showQuestion)(); } else finish(); }
+const isSpeed = () => (PUB.mode==='striker' || PUB.mode==='zoo');
+
+// ===== Ring Toss =====
+function showRings(){
+  const q=G.qs[G.idx]; G.answered=false; hud(); const opts=qOpts(q);
+  const st=$('gStage'); st.innerHTML='<div class="q">'+esc(q.q)+'</div><div class="bottles" id="gR"></div>';
+  opts.forEach(o=>{ const b=document.createElement('button'); b.className='bottle'; b.dataset.ok=o.ok?'1':'0'; b.innerHTML='<div class="ring"></div><div class="neck"></div><div class="glass"></div><div class="lbl"></div>'; b.querySelector('.lbl').textContent=o.t;
+    b.addEventListener('click',()=>{ if(G.answered) return; G.answered=true; clearInterval(timerId); const el=(performance.now()-qStart)/1000; b.classList.add(o.ok?'hit':'bad'); scoreHit(o.ok, el/PUB.secs);
+      if(!o.ok){ const c=$('gR').querySelector('.bottle[data-ok="1"]'); if(c) c.querySelector('.lbl').style.outline='4px solid var(--gold)'; } setTimeout(nextMode,1000); });
+    $('gR').appendChild(b); });
+  $('gFb').textContent=''; runTimer(PUB.secs, ()=>{ if(G.answered) return; G.answered=true; G.streak=0; $('gFb').textContent='⏰ Time!'; setTimeout(nextMode,900); });
+}
+// ===== Ferris Wheel =====
+function showWheel(){
+  const q=G.qs[G.idx]; G.answered=false; hud(); const opts=qOpts(q);
+  const st=$('gStage'); st.innerHTML='<div class="q">'+esc(q.q)+'</div><div class="wheelwrap" id="gW"><div class="wheel" id="gWheel"></div><div class="hub"></div></div>';
+  const W=$('gWheel'); const R=Math.round($('gW').clientWidth*0.40);
+  opts.forEach((o,i)=>{ const g=document.createElement('button'); g.className='gondola'; g.dataset.ok=o.ok?'1':'0'; const ang=i*90; g.style.transform='translate(-50%,-50%) rotate('+ang+'deg) translateY(-'+R+'px) rotate(-'+ang+'deg)'; g.innerHTML='<div class="car"></div>'; g.querySelector('.car').textContent=o.t;
+    g.addEventListener('click',()=>{ if(G.answered) return; G.answered=true; clearInterval(timerId); $('gW').classList.add('stop'); const el=(performance.now()-qStart)/1000; g.classList.add(o.ok?'hit':'bad'); scoreHit(o.ok, el/PUB.secs);
+      if(!o.ok){ const c=W.querySelector('.gondola[data-ok="1"]'); if(c) c.querySelector('.car').style.outline='4px solid var(--gold)'; } setTimeout(nextMode,1000); });
+    W.appendChild(g); });
+  $('gFb').textContent=''; runTimer(PUB.secs, ()=>{ if(G.answered) return; G.answered=true; G.streak=0; $('gW').classList.add('stop'); $('gFb').textContent='⏰ Time!'; setTimeout(nextMode,900); });
+}
+// ===== Funhouse Mirror Maze =====
+let mirrorTimer=null;
+function showMirror(){
+  const q=G.qs[G.idx]; G.answered=false; hud(); const opts=qOpts(q);
+  const st=$('gStage'); st.innerHTML='<div class="q">'+esc(q.q)+'</div><div class="maze" id="gM"></div>';
+  const M=$('gM');
+  opts.forEach(o=>{ const b=document.createElement('button'); b.className='mirror wobble'; b.dataset.ok=o.ok?'1':'0'; b.innerHTML='<div class="pane"></div>'; b.querySelector('.pane').textContent=o.t;
+    b.addEventListener('click',()=>{ if(G.answered) return; G.answered=true; clearInterval(timerId); clearInterval(mirrorTimer); const el=(performance.now()-qStart)/1000; Array.from(M.children).forEach(x=>x.classList.remove('wobble')); b.classList.add(o.ok?'hit':'bad'); scoreHit(o.ok, el/PUB.secs);
+      if(!o.ok){ const c=M.querySelector('.mirror[data-ok="1"]'); if(c){ c.classList.add('hit'); } } setTimeout(nextMode,1000); });
+    M.appendChild(b); });
+  clearInterval(mirrorTimer); mirrorTimer=setInterval(()=>{ if(G.answered) return; const kids=shuffle(Array.from(M.children)); kids.forEach(k=>M.appendChild(k)); }, 1900);
+  $('gFb').textContent=''; runTimer(PUB.secs, ()=>{ if(G.answered) return; G.answered=true; G.streak=0; clearInterval(mirrorTimer); $('gFb').textContent='⏰ Time!'; setTimeout(nextMode,900); });
+}
+
+// ===== Whack-a-Mole =====
+let moleTimers=[];
+function showMoles(){
+  const q=G.qs[G.idx]; G.answered=false; hud();
+  const opts=qOpts(q);
+  const st=$('gStage'); st.innerHTML='<div class="q">'+esc(q.q)+'</div><div class="field" id="gF"></div>';
+  const F=$('gF'); const holes=[]; for(let i=0;i<9;i++){ const h=document.createElement('div'); h.className='hole'; h.innerHTML='<div class="dirt"></div>'; F.appendChild(h); holes.push(h); }
+  moleTimers.forEach(clearTimeout); moleTimers=[];
+  const moles=opts.map(o=>{ const b=document.createElement('button'); b.className='mole'; b.dataset.ok=o.ok?'1':'0'; b.innerHTML='<div class="m"></div>'; b.querySelector('.m').textContent=o.t; b.addEventListener('click',()=>whack(b,o.ok)); return b; });
+  const free=()=>holes.filter(h=>!h.querySelector('.mole'));
+  const cycle=(b,delay)=>{ const t=setTimeout(()=>{ if(G.answered) return; const f=free(); if(!f.length){ cycle(b,300); return; } const h=f[Math.floor(Math.random()*f.length)]; h.appendChild(b); requestAnimationFrame(()=>b.classList.add('up'));
+      const up=setTimeout(()=>{ if(G.answered) return; b.classList.remove('up'); setTimeout(()=>{ if(!G.answered && b.parentNode) b.parentNode.removeChild(b); cycle(b, 600+Math.random()*900); },260); }, 2800+Math.random()*1200);
+      moleTimers.push(up); }, delay); moleTimers.push(t); };
+  moles.forEach((b,i)=>cycle(b, 200+i*700));
+  $('gFb').textContent='';
+  runTimer(PUB.secs, ()=>{ if(G.answered) return; G.answered=true; G.streak=0; moleTimers.forEach(clearTimeout); $('gFb').textContent='⏰ Time!'; setTimeout(nextMode,900); });
+}
+function whack(b, ok){ if(G.answered) return; G.answered=true; clearInterval(timerId); moleTimers.forEach(clearTimeout); const el=(performance.now()-qStart)/1000;
+  b.classList.add(ok?'hit':'bad'); scoreHit(ok, el/PUB.secs); if(!ok){ const c=$('gF').querySelector('.mole[data-ok="1"]'); if(c){ c.classList.add('up'); c.querySelector('.m').style.outline='4px solid #fff'; } } setTimeout(nextMode,900); }
+
+// ===== Duck Pond: answer, then pick a duck for a bonus that shrinks with time =====
+const DUCK_VALUES=[200,150,100,100,75,50,50,25];
+let duckTimer=null;
+function showDucks(){
+  const q=G.qs[G.idx]; G.answered=false; hud(); const opts=qOpts(q);
+  const st=$('gStage'); st.innerHTML='<div class="q">'+esc(q.q)+'</div><div class="balloons" id="gB"></div>';
+  opts.forEach(o=>{ const b=document.createElement('button'); b.className='balloon'; b.dataset.ok=o.ok?'1':'0'; b.style.animation='none'; b.innerHTML='<div class="body"></div>'; b.querySelector('.body').textContent=o.t; b.querySelector('.body').style.borderRadius='14px';
+    b.addEventListener('click',()=>{ if(G.answered) return; G.answered=true; clearInterval(timerId); const el=(performance.now()-qStart)/1000; $('gB').classList.add('locked');
+      if(o.ok){ b.classList.add('pop'); scoreHit(true, el/PUB.secs); setTimeout(duckPick, 700); }
+      else { b.classList.add('sag'); scoreHit(false, 0); const c=$('gB').querySelector('.balloon[data-ok="1"]'); if(c) c.querySelector('.body').style.outline='4px solid #fff'; setTimeout(nextMode,1000); } });
+    $('gB').appendChild(b); });
+  $('gFb').textContent=''; runTimer(PUB.secs, ()=>{ if(G.answered) return; G.answered=true; G.streak=0; $('gB').classList.add('locked'); $('gFb').textContent='⏰ Time!'; setTimeout(nextMode,900); });
+}
+function duckPick(){
+  const PICK=6; const vals=shuffle(DUCK_VALUES.slice()); let picked=false; const start=performance.now();
+  const st=$('gStage'); st.innerHTML='<div class="q">Pick a duck! Values drop as the clock runs.</div><div class="pond" id="gP"><div class="wave" style="top:18%"></div><div class="wave" style="top:48%"></div><div class="wave" style="top:78%"></div></div>';
+  const P=$('gP');
+  const ducks=vals.map((v,i)=>{ const b=document.createElement('button'); b.className='duck'; b.style.left=(6+(i%4)*23)+'%'; b.style.top=(12+Math.floor(i/4)*44)+'%'; b.style.animation='bob '+(2.4+Math.random())+'s ease-in-out infinite'; b.innerHTML='<span class="bill">🦆</span><span class="tag">?</span>';
+    b.addEventListener('click',()=>{ if(picked) return; picked=true; clearInterval(duckTimer); clearInterval(timerId); const frac=Math.max(0,1-(performance.now()-start)/1000/PICK); const won=Math.max(5,Math.round(v*frac/5)*5);
+      ducks.forEach((d,k)=>{ d.querySelector('.tag').textContent=Math.max(5,Math.round(vals[k]*frac/5)*5); d.classList.add(d===b?'hit':'bad'); });
+      G.score+=won; $('gScore').textContent=G.score+' pts'; $('gFb').textContent='🦆 +'+won+' bonus'; if(won>=150) confetti(); setTimeout(nextMode,1300); });
+    P.appendChild(b); return b; });
+  $('gFb').textContent='Every duck hides a bonus. Values are shrinking…';
+  runTimer(PICK, ()=>{ if(picked) return; picked=true; $('gFb').textContent='⏰ The ducks swam off.'; ducks.forEach(d=>d.classList.add('bad')); setTimeout(nextMode,900); });
+}
+// ===== High Striker (speed round) =====
+let strikerEnd=0, strikerQi=0;
+const ZOO=['🐐','🐑','🐷','🐰','🐔','🦙','🐮','🦆','🐴','🐢'];
+function startStriker(){
+  G.qs = bankForRound(); strikerQi=0; G.answered=false;
+  const st=$('gStage');
+  if (PUB.mode==='zoo') st.innerHTML='<div class="bigclock" id="gClock"></div><div class="pen" id="gPen"><div class="empty">Your pen is empty. Feed the animals with right answers.</div></div><div class="q" id="gSQ" style="min-height:1.8em;margin-top:14px"></div><div class="two" id="gTwo"></div>';
+  else st.innerHTML='<div class="bigclock" id="gClock"></div><div class="striker"><div class="tower"><div class="fill" id="gFill"></div><div class="bell" id="gBell">🔔</div></div><div><div class="q" id="gSQ" style="min-height:1.8em"></div><div class="two" id="gTwo"></div></div></div>';
+  $('gTimer').firstElementChild.style.width='100%';
+  strikerEnd=performance.now()+PUB.speedSecs*1000;
+  clearInterval(timerId);
+  timerId=setInterval(()=>{ const left=Math.max(0,(strikerEnd-performance.now())/1000); $('gClock').textContent=left.toFixed(1)+'s'; $('gTimer').firstElementChild.style.width=(left/PUB.speedSecs*100)+'%'; $('gTimer').classList.toggle('hot',left<10); if(left<=0){ clearInterval(timerId); finish(); } },100);
+  strikerQ();
+}
+function strikerQ(){
+  if (strikerQi>=G.qs.length) G.qs=G.qs.concat(shuffle(G.qs.slice()));   // loop the bank if they are fast
+  const q=G.qs[strikerQi]; const ci=(typeof q.c==='number')?q.c:dec(q.k,q.i); const wrongs=q.o.map((t,i)=>i).filter(i=>i!==ci && q.o[i] && q.o[i]!=='—'); const wi=wrongs[Math.floor(Math.random()*wrongs.length)];
+  const pair=shuffle([{t:q.o[ci],ok:true},{t:q.o[wi],ok:false}]);
+  $('gQ').textContent='Q '+(strikerQi+1); $('gScore').textContent=G.score+' pts'; $('gStreak').style.display=G.streak>=3?'':'none'; $('gStreak').textContent='🔥 '+G.streak;
+  $('gSQ').textContent=q.q; const T=$('gTwo'); T.innerHTML=''; delete T.dataset.lock;
+  pair.forEach(o=>{ const b=document.createElement('button'); b.className='opt'; b.textContent=o.t; b.addEventListener('click',()=>{ if(T.dataset.lock) return; T.dataset.lock='1';
+      if(o.ok){ G.score+=PUB.pts; G.correct++; G.streak++; G.best=Math.max(G.best,G.streak); b.classList.add('good'); $('gFb').textContent='+'+PUB.pts;
+        if(PUB.mode==='zoo'){ const pen=$('gPen'); const e=pen.querySelector('.empty'); if(e) e.remove(); const a=document.createElement('span'); a.textContent=ZOO[G.correct%ZOO.length]; pen.appendChild(a); if(G.streak%5===0){ $('gFb').textContent='+'+PUB.pts+'  🎉 5 in a row!'; confetti(); } }
+        else { const h=Math.min(100,(G.streak%5||5)*20); $('gFill').style.height=h+'%'; if(G.streak%5===0){ $('gBell').classList.add('ring'); setTimeout(()=>$('gBell').classList.remove('ring'),700); confetti(); } } }
+      else { G.score=Math.max(0,G.score-PUB.pen); G.streak=0; b.classList.add('badx'); $('gFb').textContent='−'+PUB.pen+(PUB.mode==='zoo'?'  the goat ran off':''); if(PUB.mode!=='zoo') $('gFill').style.height='0%'; }
+      G.total=0; strikerQi++; setTimeout(strikerQ, 350); }); T.appendChild(b); });
+  G.qs.length = Math.max(G.qs.length, strikerQi+1);
+}
+
+// ===== Crystal Ball =====
+let revealTimer=null;
+function showCrystal(){
+  const q=G.qs[G.idx]; G.answered=false; hud();
+  const ans=String(q.short||'').trim(); const secs=PUB.secs*2;
+  const chars=ans.split(''); const idxs=chars.map((c,i)=>i).filter(i=>/[a-z0-9]/i.test(chars[i])); shuffle(idxs);
+  const shown=new Set(); let revealed=0;
+  const draw=()=>{ $('gL').innerHTML=chars.map((c,i)=> /[a-z0-9]/i.test(c) ? (shown.has(i)?'<span>'+esc(c)+'</span>':'<span class="blank">_</span>') : (c===' '?'<span>&nbsp;&nbsp;</span>':'<span>'+esc(c)+'</span>')).join(''); };
+  const st=$('gStage'); st.innerHTML='<div class="q">'+esc(q.q)+'</div><div class="ball"><div class="letters" id="gL"></div></div><div class="typebox"><input id="gIn" autocomplete="off" autocapitalize="characters" placeholder="Type the answer"><button class="btn" id="gGo">Guess</button></div><div class="status" style="text-align:center">Guesses: <span id="gTries">0</span> · Letters shown: <span id="gShown">0</span>/'+idxs.length+'</div>';
+  draw();
+  const step=Math.max(600, (secs*1000*0.8)/Math.max(1,idxs.length));
+  clearInterval(revealTimer); revealTimer=setInterval(()=>{ if(G.answered) return; if(revealed<idxs.length){ shown.add(idxs[revealed++]); $('gShown').textContent=revealed; draw(); } },step);
+  let tries=0; const norm=x=>String(x).toLowerCase().replace(/[^a-z0-9]/g,'');
+  const guess=()=>{ if(G.answered) return; const v=$('gIn').value; if(!norm(v)) return; tries++; $('gTries').textContent=tries;
+    if(norm(v)===norm(ans)){ G.answered=true; clearInterval(timerId); clearInterval(revealTimer); const frac=revealed/Math.max(1,idxs.length); const bonus=Math.round(PUB.bonus*(1-frac)); G.score+=PUB.pts+bonus; G.correct++; G.streak++; G.best=Math.max(G.best,G.streak); chars.forEach((c,i)=>shown.add(i)); draw(); $('gFb').textContent='✨ +'+(PUB.pts+bonus); if(G.streak%3===0) confetti(); $('gScore').textContent=G.score+' pts'; setTimeout(nextMode,1100); }
+    else { G.score=Math.max(0,G.score-PUB.pen); G.streak=0; $('gFb').textContent='−'+PUB.pen+'  try again'; $('gScore').textContent=G.score+' pts'; $('gIn').value=''; $('gIn').focus(); } };
+  $('gGo').addEventListener('click',guess); $('gIn').addEventListener('keydown',e=>{ if(e.key==='Enter') guess(); }); setTimeout(()=>$('gIn').focus(),100);
+  $('gFb').textContent='';
+  runTimer(secs, ()=>{ if(G.answered) return; G.answered=true; G.streak=0; clearInterval(revealTimer); chars.forEach((c,i)=>shown.add(i)); draw(); $('gFb').textContent='⏰ The answer was: '+ans; setTimeout(nextMode,1500); });
+}
+
+function showQuestion(){
+  const q = G.qs[G.idx]; G.answered=false;
+  $('gQ').textContent = 'Q '+(G.idx+1)+' / '+G.qs.length; $('gScore').textContent = G.score+' pts';
+  $('gStreak').style.display = G.streak>=3?'':'none'; $('gStreak').textContent = '🔥 '+G.streak+' streak';
+  const correctIdx = (typeof q.c === 'number') ? q.c : dec(q.k, q.i);
+  const opts = shuffle(q.o.map((t,i)=>({t, ok:i===correctIdx})));
+  const st = $('gStage'); st.innerHTML = '<div class="q">'+esc(q.q)+'</div><div class="balloons" id="gB"></div>';
+  const B = $('gB');
+  opts.forEach(o=>{ const b=document.createElement('button'); b.className='balloon'; b.dataset.ok=o.ok?'1':'0'; b.innerHTML='<div class="body"></div><div class="string"></div>'; b.querySelector('.body').textContent=o.t; b.addEventListener('click',()=>answer(b,o.ok)); B.appendChild(b); });
+  $('gFb').textContent='';
+  qStart = performance.now(); const tb=$('gTimer'); tb.classList.remove('hot'); tb.firstElementChild.style.width='100%';
+  clearInterval(timerId);
+  timerId = setInterval(()=>{ const el=(performance.now()-qStart)/1000, left=Math.max(0,PUB.secs-el); tb.firstElementChild.style.width=(left/PUB.secs*100)+'%'; if(left<PUB.secs*0.3) tb.classList.add('hot'); if(left<=0){ clearInterval(timerId); timeUp(); } }, 100);
+}
+function answer(btn, ok){
+  if (G.answered) return; G.answered=true; clearInterval(timerId);
+  const el=(performance.now()-qStart)/1000; $('gB').classList.add('locked');
+  if (ok) {
+    const bonus = Math.round(PUB.bonus * Math.max(0, 1 - el/PUB.secs)); G.score += PUB.pts + bonus; G.correct++; G.streak++; G.best=Math.max(G.best,G.streak);
+    btn.classList.add('pop'); $('gFb').textContent = '+'+(PUB.pts+bonus)+(G.streak>=3?'  🔥':'');
+    if (G.streak && G.streak%3===0) confetti();
+  } else {
+    G.score = Math.max(0, G.score - PUB.pen); G.streak=0; btn.classList.add('sag');
+    $('gFb').textContent = '−'+PUB.pen;
+  }
+  Array.from($('gB').children).forEach(b=>{ if(b!==btn && !(b.dataset.ok==='1' && !ok)) b.classList.add('dim'); if(b!==btn && b.dataset.ok==='1' && !ok) b.querySelector('.body').style.outline='4px solid #fff'; });
+  $('gScore').textContent = G.score+' pts';
+  setTimeout(next, 900);
+}
+function timeUp(){ if (G.answered) return; G.answered=true; G.streak=0; $('gB').classList.add('locked'); $('gFb').textContent='⏰ Time!'; Array.from($('gB').children).forEach(b=>{ if(b.dataset.ok==='1') b.querySelector('.body').style.outline='4px solid #fff'; else b.classList.add('sag'); }); setTimeout(next, 900); }
+function next(){ G.idx++; if (G.idx < G.qs.length) showQuestion(); else finish(); }
+async function finish(){
+  clearInterval(timerId); clearInterval(revealTimer); clearInterval(mirrorTimer); clearInterval(duckTimer); moleTimers.forEach(clearTimeout); G.total = Math.round(performance.now()-G.t0);
+  if (isSpeed()) G.qs.length = strikerQi;
+  $('gStage').innerHTML='<div class="count">🎪</div>'; $('gFb').innerHTML='<span class="spin"></span> Saving your score…';
+  const rk = roundKey(PUB.round), ek = emailKey(G.player.email);
+  const rec = { round: PUB.round, roundKey: rk, mode: PUB.mode||'balloon', name:G.player.name, sup:G.player.sup, email:G.player.email, uid, score:G.score, timeMs:G.total, correct:G.correct, total:G.qs.length, code:G.player.code||'', at:Date.now() };
+  let saved=false, why='';
+  try { const batch=writeBatch(db); batch.set(doc(db,'scores',rk+'__'+ek), rec); batch.set(doc(db,'qdevices',rk+'__'+uid), {score:G.score,timeMs:G.total,email:G.player.email,at:Date.now()}); await batch.commit(); saved=true; }
+  catch(err){ why = err.code==='permission-denied' ? "Score not saved: wrong code, or this email or device already played this round." : 'Score not saved ('+(err.code||err.message)+').'; }
+  played = saved ? {score:G.score,timeMs:G.total} : played;
+  $('game').classList.remove('on'); $('lobbyBar').style.display=''; $('board').style.display=''; if (isAdmin) $('admin').style.display='';
+  applyLook();
+  $('rScore').textContent=G.score; $('rDetail').textContent=G.correct+' of '+G.qs.length+' correct · '+(G.total/1000).toFixed(1)+' seconds'+(G.best>=3?' · best streak '+G.best:'')+(isSpeed()&&G.best>=5?(PUB.mode==='zoo'?' · full pen':' · bell rung'):'');
+  const list = rankScores(saved ? scores.concat(scores.some(s=>s.uid===uid)?[]:[rec]) : scores); const pos = saved ? list.findIndex(s=>s.uid===uid)+1 : 0;
+  $('rRank').textContent = saved ? ('Right now you are #'+pos+' on the board. That is '+ticketsFor(pos)+' ticket'+(ticketsFor(pos)===1?'':'s')+' if it holds.') : '';
+  $('rStatus').textContent = why; $('resultDlg').classList.add('on'); if (saved && pos<=3) confetti();
+}
+$('rClose').addEventListener('click',()=>{ $('resultDlg').classList.remove('on'); $('board').scrollIntoView({behavior:'smooth'}); });
+function confetti(){ const c=$('confetti'); const cols=[PUB.b1,PUB.b2,PUB.b3,PUB.b4,PUB.accent]; for(let i=0;i<60;i++){ const p=document.createElement('i'); p.style.left=Math.random()*100+'vw'; p.style.background=cols[i%cols.length]; p.style.animationDelay=(Math.random()*.6)+'s'; p.style.transform='rotate('+Math.random()*360+'deg)'; c.appendChild(p); setTimeout(()=>p.remove(),2600); } }
+
+// ---------------- admin ----------------
+document.addEventListener('input', e=>{ if(e.target.closest && e.target.closest('#admin') && e.target.id!=='aOpen') adminDirty=true; });
+function fillAdmin(force){
+  $('aOpen').checked=!!PUB.open; if (adminDirty && !force) return;
+  $('aRound').value=PUB.round; $('aMode').value=PUB.mode||'balloon'; $('aQday').value=PUB.qday||'auto'; $('aSpeed').value=PUB.speedSecs||60; $('aPerGame').value=PUB.perGame; $('aSecs').value=PUB.secs; $('aPts').value=PUB.pts; $('aBonus').value=PUB.bonus; $('aPen').value=PUB.pen; $('aBaseT').value=PUB.baseT; $('aRankT').value=(PUB.rankT||[]).join(','); $('aTop').value=PUB.top;
+  $('aKicker').value=PUB.kicker; $('aTitle').value=PUB.title; $('aSub').value=PUB.sub; $('aFont').value=PUB.font; $('aAccent').value=PUB.accent; $('aPageBg').value=PUB.pageBg; ['b1','b2','b3','b4'].forEach(k=>$('a'+k.toUpperCase()).value=PUB[k]); $('aStripes').checked=PUB.stripes!==false;
+  $('aSups').value=PUB.sups.join(', '); $('aDomains').value=PUB.domains.join(', ');
+  renderQs();
+}
+async function savePub(patch){ await setDoc(doc(db,'quiz','public'), Object.assign({}, PUB, patch)); adminDirty=false; }
+SCHEDULE.forEach((d,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=d.round+' · '+MODES[d.mode].icon+' '+MODES[d.mode].name; $('aSched').appendChild(o); });
+$('aSched').addEventListener('change', e=>{ const d=SCHEDULE[+e.target.value]; if(!d) return; $('aRound').value=d.round; $('aMode').value=d.mode; $('aQday').value=d.qday||'auto'; adminDirty=true; $('aStatus').textContent='Loaded '+d.round+' · '+MODES[d.mode].name+'. Click Save to make it live.'; });
+$('aRoundSave').addEventListener('click', async ()=>{
+  const round=$('aRound').value.trim()||'Round 1', code=$('aCode').value.trim();
+  try { await setDoc(doc(db,'quiz','secret'),{code}); await savePub({round, mode:$('aMode').value, qday:$('aQday').value, hasCode: !!code, open:$('aOpen').checked}); $('aStatus').textContent='Saved. Round "'+round+'" · '+MODES[$('aMode').value].name+(code?' · code '+code:' · no code needed')+'.'; }
+  catch(err){ $('aStatus').textContent='Could not save ('+(err.code||'error')+').'; }
+});
+$('aOpen').addEventListener('change', async e=>{ try{ await setDoc(doc(db,'quiz','public'), Object.assign({},PUB,{open:e.target.checked})); }catch(err){ toast('Could not save.'); } });
+$('aSetSave').addEventListener('click', async ()=>{
+  const rankT=$('aRankT').value.split(',').map(x=>Math.max(0,+x.trim()||0)).slice(0,10); while(rankT.length<10) rankT.push(0);
+  const patch={ perGame:Math.min(50,Math.max(3,+$('aPerGame').value||10)), speedSecs:Math.min(180,Math.max(20,+$('aSpeed').value||60)), secs:Math.min(60,Math.max(5,+$('aSecs').value||15)), pts:+$('aPts').value||100, bonus:+$('aBonus').value||0, pen:+$('aPen').value||0, baseT:+$('aBaseT').value||0, rankT, top:Math.min(100,Math.max(5,+$('aTop').value||20)) };
+  try{ await savePub(patch); $('aSetStatus').textContent='Saved.'; }catch(err){ $('aSetStatus').textContent='Could not save ('+(err.code||'error')+').'; }
+});
+$('aLookSave').addEventListener('click', async ()=>{
+  const patch={ kicker:$('aKicker').value.trim(), title:$('aTitle').value.trim(), sub:$('aSub').value.trim(), font:$('aFont').value, accent:$('aAccent').value, pageBg:$('aPageBg').value, b1:$('aB1').value, b2:$('aB2').value, b3:$('aB3').value, b4:$('aB4').value, stripes:$('aStripes').checked,
+    sups:$('aSups').value.split(',').map(x=>x.trim()).filter(Boolean), domains:$('aDomains').value.split(',').map(x=>x.trim().replace(/^@/,'')).filter(Boolean) };
+  try{ await savePub(patch); $('aLookStatus').textContent='Saved.'; }catch(err){ $('aLookStatus').textContent='Could not save ('+(err.code||'error')+').'; }
+});
+// questions
+function renderQs(){
+  const box=$('aQs'); box.innerHTML='';
+  (PUB.questions||[]).forEach((q,i)=>addQRow(q.q, q.o, (typeof q.c==='number')?q.c:dec(q.k,i), q.tag||'any'));
+  renderCs();
+  $('aQCount').textContent=(PUB.questions||[]).length;
+}
+function addQRow(q, o, c, cat){
+  const r=document.createElement('div'); r.className='qrow';
+  r.innerHTML='<input type="text" placeholder="Question" maxlength="240"><input type="text" placeholder="A" maxlength="80"><input type="text" placeholder="B" maxlength="80"><input type="text" placeholder="C" maxlength="80"><input type="text" placeholder="D" maxlength="80"><select><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select><select class="tag"><option value="any">Any day</option><option value="mon">Mon</option><option value="tue">Tue</option><option value="wed">Wed</option><option value="thu">Thu</option><option value="fri">Fri</option><option value="sat">Sat</option><option value="sun">Sun</option></select><button class="x" aria-label="Remove">✕</button>';
+  const ins=r.querySelectorAll('input'); ins[0].value=q||''; for(let k=0;k<4;k++) ins[k+1].value=(o&&o[k])||''; r.querySelectorAll('select')[0].value=String(c||0); r.querySelector('select.tag').value=cat||'any';
+  r.querySelector('.x').addEventListener('click',()=>{ r.remove(); adminDirty=true; $('aQCount').textContent=$('aQs').children.length; });
+  $('aQs').appendChild(r); $('aQCount').textContent=$('aQs').children.length;
+}
+function readQs(){ return Array.from($('aQs').querySelectorAll('.qrow')).map((r,i)=>{ const ins=r.querySelectorAll('input'); const o=[1,2,3,4].map(k=>ins[k].value.trim()); const sels=r.querySelectorAll('select'); return {q:ins[0].value.trim(), o, c:+sels[0].value, tag:sels[1].value||'any'}; }).filter(x=>x.q && x.o.filter(Boolean).length>=2); }
+function renderCs(){ const box=$('aCs'); box.innerHTML=''; (PUB.crystal||[]).forEach(c=>addCRow(c.q,c.a)); $('aCCount').textContent=(PUB.crystal||[]).length; }
+function addCRow(q,a){ const r=document.createElement('div'); r.className='crow'; r.innerHTML='<input type="text" placeholder="Question or clue" maxlength="240"><input type="text" placeholder="ONE WORD" maxlength="30" style="text-transform:uppercase"><button class="x" aria-label="Remove">✕</button>'; r.children[0].value=q||''; r.children[1].value=a||''; r.children[2].addEventListener('click',()=>{ r.remove(); adminDirty=true; $('aCCount').textContent=$('aCs').children.length; }); $('aCs').appendChild(r); $('aCCount').textContent=$('aCs').children.length; }
+function readCs(){ return Array.from($('aCs').querySelectorAll('.crow')).map(r=>({q:r.children[0].value.trim(), a:r.children[1].value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'')})).filter(x=>x.q && x.a); }
+$('aCAdd').addEventListener('click',()=>{ addCRow('',''); adminDirty=true; });
+$('aQBuiltin').addEventListener('click', async ()=>{ if(!confirm('Replace the saved multiple-choice list with the built-in 40?')) return; try{ await savePub({questions: DEFAULTS.questions}); $('aQStatus').textContent='Built-in 40 restored.'; }catch(err){ $('aQStatus').textContent='Could not save ('+(err.code||'error')+').'; } });
+$('aCBuiltin').addEventListener('click', async ()=>{ if(!confirm("Replace the saved Crystal Ball list with Madame Zelda's built-in 20?")) return; try{ await savePub({crystal: DEFAULTS.crystal}); $('aCStatus').textContent='Built-in 20 restored.'; }catch(err){ $('aCStatus').textContent='Could not save ('+(err.code||'error')+').'; } });
+$('aCSave').addEventListener('click', async ()=>{ const cs=readCs(); try{ await savePub({crystal:cs}); $('aCStatus').textContent='Saved '+cs.length+' Crystal Ball questions.'; }catch(err){ $('aCStatus').textContent='Could not save ('+(err.code||'error')+').'; } });
+$('aQAdd').addEventListener('click',()=>{ addQRow('',['','','',''],0,''); adminDirty=true; });
+$('aQSave').addEventListener('click', async ()=>{
+  const qs=readQs().map((x,i)=>({q:x.q, o:x.o.map(t=>t||'—'), k:enc(x.c,i), tag:x.tag||'any'}));
+  try{ await savePub({questions:qs}); $('aQStatus').textContent='Saved '+qs.length+' questions.'; }catch(err){ $('aQStatus').textContent='Could not save ('+(err.code||'error')+').'; }
+});
+function parseBulk(){
+  return $('aBulk').value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>{ const p=l.includes('|')?l.split('|'):l.split('\t'); const f=p.map(x=>x.trim()); if(f.length<6) return null; const c='ABCD'.indexOf((f[5]||'A').toUpperCase().charAt(0)); const tg=(f[6]||'any').toLowerCase().slice(0,3); return {q:f[0], o:[f[1],f[2],f[3],f[4]], c:c<0?0:c, cat:['mon','tue','wed','thu','fri','sat','sun'].includes(tg)?tg:'any'}; }).filter(Boolean);
+}
+$('aBulkAdd').addEventListener('click',()=>{ const qs=parseBulk(); if(!qs.length) return $('aBulkStatus').textContent='Nothing parsed. Check the format.'; qs.forEach(q=>addQRow(q.q,q.o,q.c,q.cat)); adminDirty=true; $('aBulkStatus').textContent=qs.length+' added below. Click "Save questions" to publish.'; });
+$('aBulkReplace').addEventListener('click',()=>{ const qs=parseBulk(); if(!qs.length) return $('aBulkStatus').textContent='Nothing parsed. Check the format.'; if(!confirm('Replace all '+$('aQs').children.length+' existing questions with these '+qs.length+'?')) return; $('aQs').innerHTML=''; qs.forEach(q=>addQRow(q.q,q.o,q.c,q.cat)); adminDirty=true; $('aBulkStatus').textContent='Replaced. Click "Save questions" to publish.'; });
+// results
+async function allScores(){ const snap=await getDocs(collection(db,'scores')); return snap.docs.map(d=>d.data()); }
+async function loadResults(){
+  const all=await allScores(); const rounds=Array.from(new Set(all.map(s=>s.round))).sort();
+  const sel=$('aViewRound'); const cur=sel.value||PUB.round; sel.innerHTML=''; (rounds.length?rounds:[PUB.round]).forEach(r=>{ const o=document.createElement('option'); o.textContent=r; sel.appendChild(o); }); if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
+  const list=rankScores(all.filter(s=>s.round===sel.value));
+  let h='<table><tr><th>#</th><th>Name</th><th>Supervisor</th><th>Email</th><th>Score</th><th>Time</th><th>Correct</th><th>Tickets</th><th>When</th></tr>';
+  list.forEach((s,i)=>{ h+='<tr><td>'+(i+1)+'</td><td>'+esc(s.name)+'</td><td>'+esc(s.sup)+'</td><td>'+esc(s.email)+'</td><td>'+s.score+'</td><td>'+(s.timeMs/1000).toFixed(1)+'s</td><td>'+s.correct+'/'+s.total+'</td><td>'+ticketsFor(i+1)+'</td><td>'+new Date(s.at||0).toLocaleString()+'</td></tr>'; });
+  $('aResults').innerHTML=h+'</table>'+(list.length?'':'<div class="status">No plays in this round.</div>');
+  return all;
+}
+$('aViewRound').addEventListener('change', loadResults);
+function csvOf(all, onlyRound){
+  const rounds = onlyRound ? [onlyRound] : Array.from(new Set(all.map(s=>s.round))).sort();
+  const lines=['round,game,rank,name,supervisor,email,score,time_seconds,correct,questions,tickets,played_at'];
+  rounds.forEach(r=>{ rankScores(all.filter(s=>s.round===r)).forEach((s,i)=>{ lines.push([r,(MODES[s.mode]||MODES.balloon).name,i+1,s.name,s.sup,s.email,s.score,(s.timeMs/1000).toFixed(1),s.correct,s.total,ticketsFor(i+1),new Date(s.at||0).toISOString()].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')); }); });
+  return lines.join('\n');
+}
+function download(name, text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'})); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+$('aExport').addEventListener('click', async ()=>{ const all=await loadResults(); download('trivia_'+roundKey($('aViewRound').value)+'.csv', csvOf(all,$('aViewRound').value)); });
+$('aExportAll').addEventListener('click', async ()=>{ const all=await loadResults(); download('trivia_all_rounds.csv', csvOf(all)); });
+$('aReset').addEventListener('click', async ()=>{
+  if(!confirm('Delete ALL scores for ALL rounds? Export first.')) return; if(prompt('Type DELETE to confirm')!=='DELETE') return;
+  const st=$('aResStatus'); st.innerHTML='<span class="spin"></span> Deleting…';
+  try{ for(const c of ['scores','qdevices']){ const snap=await getDocs(collection(db,c)); let b=writeBatch(db),i=0; for(const d of snap.docs){ b.delete(d.ref); if(++i%400===0){ await b.commit(); b=writeBatch(db);} } await b.commit(); } played=null; applyLook(); st.textContent='All scores deleted.'; loadResults(); }
+  catch(err){ st.textContent='Failed ('+(err.code||err.message)+').'; }
+});
+
+// ---------------- auth / boot ----------------
+$('adminLink').addEventListener('click',e=>{ e.preventDefault(); $('adminDlg').classList.add('on'); $('dOut').style.display=isAdmin?'':'none'; });
+$('dCancel').addEventListener('click',()=>$('adminDlg').classList.remove('on'));
+$('adminDlg').addEventListener('click',e=>{ if(e.target===$('adminDlg')) $('adminDlg').classList.remove('on'); });
+applyLook(); renderBoard();
+const app=initializeApp(firebaseConfig); auth=getAuth(app); db=getFirestore(app);
+let started=false, unsubScores=null, curRound=null;
+function subscribeScores(){
+  const rk=roundKey(PUB.round); if (rk===curRound) return; curRound=rk; if(unsubScores) unsubScores();
+  unsubScores = onSnapshot(query(collection(db,'scores'), where('roundKey','==',rk)), snap=>{ scores=snap.docs.map(d=>d.data()); renderBoard(); }, e=>{ $('notice').textContent='Leaderboard offline ('+e.code+').'; });
+  getDoc(doc(db,'qdevices',rk+'__'+uid)).then(dv=>{ played = dv.exists()?dv.data():null; applyLook(); }).catch(()=>{});
+}
+onAuthStateChanged(auth, async u=>{
+  if(!u){ uid=null; isAdmin=false; try{ await signInAnonymously(auth); }catch(e){ $('notice').textContent='Could not connect (enable Anonymous sign-in in Firebase Auth).'; } return; }
+  uid=u.uid; isAdmin=!u.isAnonymous; $('admin').classList.toggle('on',isAdmin);
+  if(isAdmin){ fillAdmin(true); try{ const s=await getDoc(doc(db,'quiz','secret')); if(s.exists()) $('aCode').value=s.data().code||''; }catch(e){} loadResults(); }
+  if(!started){ started=true;
+    onSnapshot(doc(db,'quiz','public'), s=>{ PUB=Object.assign({}, DEFAULTS, s.exists()?s.data():{}); if(!Array.isArray(PUB.questions) || PUB.questions.length < 10) PUB.questions=DEFAULTS.questions; if(!Array.isArray(PUB.crystal) || PUB.crystal.length < 3) PUB.crystal=DEFAULTS.crystal; applyLook(); if(isAdmin) fillAdmin(); subscribeScores(); renderBoard(); });
+  } else { curRound=null; subscribeScores(); }
+});
+$('dGo').addEventListener('click', async ()=>{ $('dStatus').textContent='Signing in…'; try{ await signInWithEmailAndPassword(auth,$('dEmail').value.trim(),$('dPass').value); $('dStatus').textContent=''; $('adminDlg').classList.remove('on'); toast('Signed in as admin.'); }catch(err){ $('dStatus').textContent='Sign-in failed: '+(err.code||'error'); } });
+$('dOut').addEventListener('click', async ()=>{ await signOut(auth); $('adminDlg').classList.remove('on'); toast('Signed out.'); });
+</script>
+</body>
+</html>
