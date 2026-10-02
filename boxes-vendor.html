@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Midway Mystery Booths · Vendors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Creepster&family=Bangers&family=Mountains+of+Christmas:wght@700&family=Pacifico&family=Fredoka:wght@600&family=Cinzel:wght@700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#f4e9d2; --bg2:#fbf4e4; --ink:#1a1412; --ink2:#3a2e2a; --muted:#6a5b55;
+  --accent:#b3261e; --accent2:#7d1a13; --gold:#e9b949; --line:#1a1412; --card:#fffaf0; --shadow:0 2px 0 #1a1412;
+  --box-bg:#b3261e; --box-ink:#fff8e7; --box-border:#1a1412; --box-bw:3px; --box-r:0px; --font-display:'Rye',serif;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Alegreya Sans','Gill Sans','Trebuchet MS',sans-serif;font-size:17px;line-height:1.4}
+.stripe{height:14px;}
+.stripe.off{display:none}
+.stripe{background:repeating-linear-gradient(90deg,var(--accent) 0 28px,var(--bg) 28px 56px);border-bottom:3px solid var(--line)}
+header{padding:18px 20px 8px;max-width:1100px;margin:0 auto;text-align:center}
+.kicker{font-size:13px;letter-spacing:3px;text-transform:uppercase;font-weight:700}
+h1{font-family:var(--font-display);font-size:clamp(30px,6vw,54px);margin:2px 0 0;line-height:1;text-transform:uppercase}
+.sub{margin:6px 0 0;font-style:italic;color:var(--ink2)}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px 40px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin:12px 0}
+.chip{border:2px solid var(--line);background:var(--card);padding:6px 12px;font-size:15px;font-weight:700}
+.btn{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--accent);color:#fff;padding:10px 16px;cursor:pointer;min-height:44px;box-shadow:var(--shadow)}
+.btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+.btn.ghost{background:var(--bg2);color:var(--ink)}
+.btn.small{padding:6px 10px;min-height:38px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-top:10px}
+.box{position:relative;aspect-ratio:1;perspective:800px;cursor:default}
+.box .inner{position:absolute;inset:0;transition:transform .7s;transform-style:preserve-3d}
+.box.open .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border:var(--box-bw) solid var(--box-border);border-radius:var(--box-r);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px;text-align:center;box-shadow:var(--shadow)}
+.front{background:var(--box-bg);color:var(--box-ink)}
+.front .ico{font-size:clamp(28px,5vw,42px);line-height:1}
+.front .ico img{width:58%;max-height:58%;object-fit:contain;display:block;margin:0 auto}
+.front .num{font-family:var(--font-display);font-size:20px}
+body.nonum .front .num{display:none}
+body.bgimg{background-image:var(--bg-img);background-size:cover;background-attachment:fixed;background-position:center}
+body.bgimg .wrap,body.bgimg header{background:color-mix(in srgb,var(--bg) 82%,transparent)}
+.back{background:var(--card);color:var(--ink);transform:rotateY(180deg)}
+.back .prize{font-weight:700;font-size:15px;line-height:1.15;text-wrap:balance}
+.back .who{font-size:12px;color:var(--muted);margin-top:4px;letter-spacing:.5px;text-transform:uppercase}
+.back .num{position:absolute;top:4px;left:8px;font-family:var(--font-display);font-size:13px;color:var(--muted)}
+.picking .box:not(.open){cursor:pointer}
+.picking .box:not(.open):hover .front, .picking .box:not(.open):focus-within .front{outline:4px solid var(--gold);outline-offset:-4px}
+.box button.hit{position:absolute;inset:0;background:none;border:0;cursor:inherit;z-index:2}
+.box.taken .front{filter:grayscale(.3) brightness(.9)}
+.panel{border:2px solid var(--line);background:var(--bg2);padding:14px 16px;margin:12px 0}
+.panel h2{font-family:'Rye',serif;font-size:20px;margin:0 0 8px;text-transform:uppercase;letter-spacing:1px}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.row>*{flex:1 1 180px}
+label{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+input,select,textarea{font:inherit;font-size:16px;padding:9px 10px;border:2px solid var(--line);background:var(--card);color:var(--ink);min-height:44px;width:100%}
+.status{font-size:14px;color:var(--muted);margin-top:8px;min-height:1.2em}
+.admin{border:2px dashed var(--accent);background:var(--bg2);padding:12px 16px;margin:12px 0;display:none}
+.admin.on{display:block}
+.admin h2{font-family:'Rye',serif;font-size:18px;margin:0 0 6px;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
+details{margin-top:10px}summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
+.pool{display:grid;grid-template-columns:1fr 90px 44px;gap:8px;align-items:center;margin-top:6px}
+.pool input{min-height:40px;padding:6px 8px}
+.pool .x{font:inherit;border:2px solid var(--line);background:var(--card);color:var(--accent);font-weight:700;min-height:40px;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border:2px solid var(--gold);display:none;max-width:90vw;z-index:20;text-align:center}
+.lb{position:fixed;inset:0;background:rgba(10,6,5,.9);display:none;align-items:center;justify-content:center;z-index:30;padding:16px}
+.lb.on{display:flex}
+.lb .dlg{background:var(--card);border:3px solid var(--gold);max-width:480px;width:100%;padding:20px;position:relative}
+.lb h2{font-family:'Rye',serif;margin:0 0 10px;text-transform:uppercase;font-size:22px;color:var(--accent)}
+.reveal{text-align:center;padding:10px 0}
+.reveal .ico{font-size:64px;line-height:1}
+.reveal .big{font-family:var(--font-display);font-size:30px;margin:8px 0 4px;text-wrap:balance}
+.spin{width:22px;height:22px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes s{to{transform:rotate(360deg)}}
+@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
+.reveal .ico{animation:pop .6s ease-out}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin-top:8px}
+th,td{border:1px solid var(--line);padding:4px 6px;text-align:left}
+th{background:var(--card)}
+.tablewrap{overflow-x:auto}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#15100f;--bg2:#1f1816;--ink:#f4e9d2;--ink2:#e2d4b8;--muted:#b5a48d;--line:#f4e9d2;--card:#241c19;--shadow:0 2px 0 #000}
+}
+:root[data-theme="dark"]{--bg:#15100f;--bg2:#1f1816;--ink:#f4e9d2;--ink2:#e2d4b8;--muted:#b5a48d;--line:#f4e9d2;--card:#241c19;--shadow:0 2px 0 #000}
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<header>
+  <div class="kicker" id="hKicker">Client Service Appreciation Week · Vendor Team</div>
+  <h1 id="hTitle">Midway Mystery Booths</h1>
+  <p class="sub" id="hSub">Got today's code? Pick a booth and see what's inside. One pick per person.</p>
+</header>
+<div class="wrap">
+  <div class="bar">
+    <span class="chip" id="cOpened">0 of 30 opened</span>
+    <button class="btn" id="btnPlay">I have a code</button>
+    <span class="chip" id="cMine" style="display:none"></span>
+  </div>
+  <div id="notice" class="status" style="text-align:center"></div>
+
+  <section class="admin" id="admin">
+    <h2>Admin panel</h2>
+    <details open>
+      <summary>Today's code and status</summary>
+      <div class="row" style="align-items:flex-end">
+        <label>Day label (saved on every winner) <input id="aRound" placeholder="Monday"></label>
+        <label>Today's code <input id="aCode" placeholder="e.g. POPCORN"></label>
+        <button class="btn small" id="aCodeSave" style="flex:0 1 auto">Save day + code</button>
+        <label style="flex-direction:row;align-items:center;gap:8px;text-transform:none;font-size:15px;flex:0 1 auto"><input type="checkbox" id="aOpen" style="width:22px;height:22px;min-height:0"> Day open (uncheck to lock the day: nobody can open a box)</label>
+      </div>
+      <div class="status" id="aStatus"></div>
+    </details>
+    <details>
+      <summary>Look and feel</summary>
+      <div class="row" style="margin-top:8px">
+        <label>Start from a preset
+          <select id="aPreset">
+            <option value="">— keep my current look —</option>
+            <option value="carnival">Carnival of Screams</option>
+            <option value="snow">Snowflakes</option>
+            <option value="valentine">Valentines</option>
+            <option value="gift">Gift boxes</option>
+            <option value="spring">Spring / Easter eggs</option>
+          </select>
+        </label>
+        <label>Display font
+          <select id="aFont">
+            <option value="'Rye',serif">Rye (carnival)</option>
+            <option value="'Creepster',cursive">Creepster (horror)</option>
+            <option value="'Bangers',cursive">Bangers (comic)</option>
+            <option value="'Mountains of Christmas',cursive">Mountains of Christmas</option>
+            <option value="'Pacifico',cursive">Pacifico (script)</option>
+            <option value="'Fredoka',sans-serif">Fredoka (rounded)</option>
+            <option value="'Cinzel',serif">Cinzel (elegant)</option>
+          </select>
+        </label>
+        <label>Number of boxes <input id="aCount" type="number" min="6" max="80"></label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label>Small line above title <input id="aKicker"></label>
+        <label>Big title <input id="aTitle"></label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label style="flex:2 1 260px">Subtitle <input id="aSub"></label>
+      </div>
+      <div style="font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-top:12px">Box face</div>
+      <div class="row" style="margin-top:6px">
+        <label>Emoji (used if no image) <input id="aIcon" maxlength="4"></label>
+        <label>Or upload an image (PNG with transparency looks best) <input id="aIconFile" type="file" accept="image/*"></label>
+        <div style="flex:0 1 auto;display:flex;align-items:flex-end;gap:8px"><div id="aIconPrev" style="width:60px;height:60px;border:2px solid var(--line);background:var(--box-bg);display:flex;align-items:center;justify-content:center;font-size:30px"></div><button class="btn ghost small" id="aIconClear" type="button">Remove image</button></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label style="flex:0 1 120px">Box color <input id="aBoxBg" type="color" style="height:44px;padding:2px"></label>
+        <label style="flex:0 1 120px">Box text <input id="aBoxInk" type="color" style="height:44px;padding:2px"></label>
+        <label style="flex:0 1 120px">Border color <input id="aBoxBorder" type="color" style="height:44px;padding:2px"></label>
+        <label style="flex:0 1 120px">Border width <input id="aBoxBw" type="number" min="0" max="12"></label>
+        <label style="flex:0 1 120px">Corner round <input id="aBoxR" type="number" min="0" max="100"></label>
+        <label style="flex-direction:row;align-items:center;gap:8px;text-transform:none;font-size:15px;flex:0 1 auto"><input type="checkbox" id="aNums" style="width:22px;height:22px;min-height:0"> Show numbers</label>
+      </div>
+      <div style="font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-top:12px">Page</div>
+      <div class="row" style="margin-top:6px">
+        <label style="flex:0 1 120px">Accent <input id="aAccent" type="color" style="height:44px;padding:2px"></label>
+        <label style="flex:0 1 120px">Page color <input id="aPageBg" type="color" style="height:44px;padding:2px"></label>
+        <label style="flex-direction:row;align-items:center;gap:8px;text-transform:none;font-size:15px;flex:0 1 auto"><input type="checkbox" id="aStripes" style="width:22px;height:22px;min-height:0"> Striped bars</label>
+        <label>Background image (optional) <input id="aBgFile" type="file" accept="image/*"></label>
+        <div style="flex:0 1 auto;display:flex;align-items:flex-end"><button class="btn ghost small" id="aBgClear" type="button">Remove background</button></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label style="flex:2 1 260px">Supervisors (comma separated, for the dropdown) <input id="aSups"></label>
+        <label>Allowed email domains (comma separated, blank = any) <input id="aDomains" placeholder="americor.com, buwelo.com"></label>
+      </div>
+      <div class="row" style="margin-top:10px;align-items:center">
+        <button class="btn" id="aLookSave" style="flex:0 1 auto">Save look</button>
+        <span class="status" id="aLookStatus" style="margin:0"></span>
+      </div>
+    </details>
+    <details>
+      <summary>Prizes and board</summary>
+      <div style="font-size:14px;color:var(--muted)">List each prize and how many boxes get it. If the total is less than the number of boxes, the rest are filled with the "empty" label. Randomize shuffles only boxes nobody has opened yet.</div>
+      <div id="aPool"></div>
+      <div class="row" style="margin-top:8px;align-items:center">
+        <button class="btn ghost small" id="aPoolAdd" style="flex:0 1 auto">+ Add prize</button>
+        <label style="flex:0 1 240px">"Empty box" label <input id="aEmpty"></label>
+        <span class="chip" id="aPoolTotal" style="flex:0 1 auto"></span>
+      </div>
+      <div class="row" style="margin-top:10px;align-items:center">
+        <button class="btn" id="aRandom" style="flex:0 1 auto">Save prizes and randomize</button>
+        <label style="flex-direction:row;align-items:center;gap:8px;text-transform:none;font-size:15px;flex:0 1 auto"><input type="checkbox" id="aShow" style="width:22px;height:22px;min-height:0"> Show me what's behind each box</label>
+        <span class="status" id="aBoardStatus" style="margin:0"></span>
+      </div>
+      <div class="tablewrap" id="aPeek" style="display:none"></div>
+    </details>
+    <details>
+      <summary>Winners, export and reset</summary>
+      <div class="row" style="margin-top:8px;align-items:center">
+        <button class="btn ghost" id="aExport" style="flex:0 1 auto">Download this board (CSV)</button>
+        <button class="btn ghost" id="aExportBoth" style="flex:0 1 auto">Download ALL winners, both boards (CSV)</button>
+        <button class="btn ghost" id="aResetBoard" style="flex:0 1 auto">New board (keep who played)</button>
+        <button class="btn" id="aResetAll" style="flex:0 1 auto;background:var(--accent2)">Full reset (everyone can play again)</button>
+        <span class="status" id="aResetStatus" style="margin:0;flex:1 1 200px"></span>
+      </div>
+      <div class="tablewrap" id="aWinners"></div>
+    </details>
+  </section>
+
+  <div class="grid" id="grid"></div>
+</div>
+<footer>One pick per person. Winners are shown on the board for everyone to see. <a href="#" id="adminLink" style="color:var(--accent)">Admin sign-in</a></footer>
+
+<div class="toast" id="toast"></div>
+
+<div class="lb" id="playDlg" role="dialog" aria-modal="true">
+  <div class="dlg">
+    <h2>Step right up</h2>
+    <div id="pStep1">
+      <label>Today's code <input id="pCode" autocomplete="off" autocapitalize="characters"></label>
+      <div class="row" style="margin-top:10px"><button class="btn" id="pNext">Continue</button><button class="btn ghost" id="pCancel1">Cancel</button></div>
+    </div>
+    <div id="pStep2" style="display:none">
+      <label>Your name <input id="pName" maxlength="60" autocomplete="name" placeholder="First and last"></label>
+      <label style="margin-top:8px">Your supervisor <select id="pSup"></select></label>
+      <label style="margin-top:8px">Work email <input id="pEmail" type="email" autocomplete="email" placeholder="you@americor.com"></label>
+      <div class="status" id="pStatus"></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="pGo">Pick my box</button><button class="btn ghost" id="pCancel2">Cancel</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="lb" id="revealDlg" role="dialog" aria-modal="true">
+  <div class="dlg">
+    <div class="reveal">
+      <div class="ico" id="rIco">🎟️</div>
+      <div style="font-size:14px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)" id="rBox">Box 1</div>
+      <div class="big" id="rPrize"></div>
+      <div id="rNote" style="color:var(--ink2)"></div>
+    </div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="rClose">Close</button></div>
+  </div>
+</div>
+
+<div class="lb" id="adminDlg" role="dialog" aria-modal="true">
+  <div class="dlg">
+    <h2>Admin sign-in</h2>
+    <label>Email <input id="dEmail" type="email" autocomplete="username"></label>
+    <label style="margin-top:8px">Password <input id="dPass" type="password" autocomplete="current-password"></label>
+    <div class="status" id="dStatus"></div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="dGo">Sign in</button><button class="btn ghost" id="dCancel">Cancel</button><button class="btn ghost" id="dOut" style="display:none">Sign out</button></div>
+  </div>
+</div>
+
+<script type="module">
+// =====================================================================
+//  Firebase config (same project as the gallery)
+// =====================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCmgCjG85EYxktlMjnwrDBtq-vjeIVawfY",
+  authDomain: "carnival-of-screams-531ce.firebaseapp.com",
+  projectId: "carnival-of-screams-531ce",
+  appId: "1:661234346389:web:e47bcfb77214a7a4cbae9c"
+};
+// =====================================================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+// =====================================================================
+//  BOARD: 'A' = Americor board, 'V' = Vendor board. Each has its own data.
+// =====================================================================
+const BOARD = 'V';
+const OTHER = BOARD==='A' ? 'V' : 'A';
+const C = { game:'game'+BOARD, boxes:'boxes'+BOARD, secret:'secretBoxes'+BOARD, players:'players'+BOARD, devices:'devices'+BOARD };
+const PRESETS = {
+  carnival: { icon:'🎟️', kicker:'Client Service Appreciation Week · Vendor Team', title:'Midway Mystery Booths', sub:"Got today's code? Pick a booth and see what's inside. One pick per person.", accent:'#b3261e', boxBg:'#b3261e', boxInk:'#fff8e7', boxBorder:'#1a1412', boxBw:3, boxR:0, pageBg:'#f4e9d2', stripes:true, font:"'Rye',serif" },
+  snow:     { icon:'❄️', kicker:'Happy Holidays', title:'Snowflake Surprise', sub:"Got today's code? Pick a snowflake and see what's inside. One pick per person.", accent:'#1e5aa8', boxBg:'#2b6fc2', boxInk:'#ffffff', boxBorder:'#ffffff', boxBw:4, boxR:50, pageBg:'#e8f1fb', stripes:false, font:"'Mountains of Christmas',cursive" },
+  valentine:{ icon:'💝', kicker:"Valentine's Week", title:'Sweetheart Boxes', sub:"Got today's code? Pick a box and see what's inside. One pick per person.", accent:'#c2185b', boxBg:'#e0387a', boxInk:'#ffffff', boxBorder:'#8e1245', boxBw:3, boxR:16, pageBg:'#fdeef4', stripes:false, font:"'Pacifico',cursive" },
+  gift:     { icon:'🎁', kicker:'Team Appreciation', title:'Mystery Gift Boxes', sub:"Got today's code? Pick a box and see what's inside. One pick per person.", accent:'#2e7d32', boxBg:'#3d9a42', boxInk:'#ffffff', boxBorder:'#1b5e20', boxBw:3, boxR:8, pageBg:'#eef7ee', stripes:false, font:"'Fredoka',sans-serif" },
+  spring:   { icon:'🥚', kicker:'Spring Celebration', title:'Egg Hunt', sub:"Got today's code? Pick an egg and see what's inside. One pick per person.", accent:'#7b3fa0', boxBg:'#9b59b6', boxInk:'#ffffff', boxBorder:'#5b2a86', boxBw:3, boxR:40, pageBg:'#f5eefb', stripes:false, font:"'Fredoka',sans-serif" },
+};
+const BOARD_DEFAULTS = BOARD==='A'
+  ? { count:40, pool:[{name:'$75',qty:1},{name:'$50',qty:3},{name:'$25',qty:7},{name:'$20',qty:11},{name:'$15',qty:18}] }
+  : { count:20, pool:[{name:'$40',qty:1},{name:'$25',qty:1},{name:'$15',qty:4},{name:'$10',qty:14}] };
+const DEFAULT_PUBLIC = Object.assign({ open:true, round:'Monday', sups:[], domains:[], empty:'Try again next time', prizeNames:[], iconImg:'', bgImg:'', nums:true }, PRESETS.carnival, BOARD_DEFAULTS);
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s);
+const ls = { get:k=>{try{return localStorage.getItem(k)}catch(e){return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}} };
+function toast(msg, ms){ const t=$('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(toast._t); toast._t=setTimeout(()=>t.style.display='none', ms||3500); }
+const emailKey = e => e.trim().toLowerCase().replace(/[^a-z0-9@._+-]/g,'').replace(/\./g,'(dot)');
+const shortName = n => { const p = String(n||'').trim().split(/\s+/); return p.length > 1 ? p[0] + ' ' + p[p.length-1][0] + '.' : p[0] || ''; };
+
+let db = null, auth = null, uid = null, isAdmin = false;
+let PUB = Object.assign({}, DEFAULT_PUBLIC);
+let boxes = {};        // n -> {opened, prize, name, sup?}
+let picking = false, played = null;   // played = {box, prize} from devices doc
+let secretBoxes = {};  // admin only
+
+// ---------------- rendering ----------------
+function iconNode(){ if (PUB.iconImg) { const i = document.createElement('img'); i.src = PUB.iconImg; i.alt = ''; return i; } return document.createTextNode(PUB.icon || ''); }
+function applyLook(){
+  $('hKicker').textContent = PUB.kicker; $('hTitle').textContent = PUB.title; $('hSub').textContent = PUB.sub; document.title = PUB.title;
+  const r = document.documentElement.style; r.setProperty('--accent', PUB.accent); r.setProperty('--accent2', PUB.accent); r.setProperty('--box-bg', PUB.boxBg);
+  r.setProperty('--box-ink', PUB.boxInk||'#fff'); r.setProperty('--box-border', PUB.boxBorder||'#1a1412'); r.setProperty('--box-bw', (PUB.boxBw ?? 3)+'px'); r.setProperty('--box-r', (PUB.boxR||0)+'%');
+  r.setProperty('--font-display', PUB.font || "'Rye',serif"); if (PUB.pageBg) { r.setProperty('--bg', PUB.pageBg); }
+  document.querySelectorAll('.stripe').forEach(e => e.classList.toggle('off', PUB.stripes === false));
+  document.body.classList.toggle('nonum', PUB.nums === false);
+  if (PUB.bgImg) { r.setProperty('--bg-img', 'url(' + PUB.bgImg + ')'); document.body.classList.add('bgimg'); } else document.body.classList.remove('bgimg');
+  $('rIco').innerHTML = ''; $('rIco').appendChild(iconNode());
+  const sel = $('pSup'); sel.innerHTML = '';
+  (PUB.sups.length ? PUB.sups : ['(no supervisors set)']).forEach(x => { const o=document.createElement('option'); o.textContent=x; sel.appendChild(o); });
+}
+function renderGrid(){
+  const g = $('grid'); g.innerHTML = ''; let opened = 0;
+  for (let n = 1; n <= PUB.count; n++) {
+    const b = boxes[n] || {opened:false};
+    if (b.opened) opened++;
+    const el = document.createElement('div'); el.className = 'box' + (b.opened ? ' open taken' : ''); el.dataset.n = n;
+    el.innerHTML = '<div class="inner"><div class="face front"><div class="ico"></div><div class="num"></div></div><div class="face back"><div class="num"></div><div class="prize"></div><div class="who"></div></div></div>';
+    el.querySelector('.front .ico').appendChild(iconNode()); el.querySelector('.front .num').textContent = '#' + n;
+    el.querySelector('.back .num').textContent = '#' + n; el.querySelector('.back .prize').textContent = b.opened ? esc(b.prize) : '';
+    el.querySelector('.back .who').textContent = b.opened ? esc(b.name) : '';
+    if (!b.opened) { const hit = document.createElement('button'); hit.className='hit'; hit.setAttribute('aria-label','Box '+n); hit.addEventListener('click', ()=>pickBox(n)); el.appendChild(hit); }
+    g.appendChild(el);
+  }
+  $('cOpened').textContent = opened + ' of ' + PUB.count + ' opened';
+  document.body.classList.toggle('picking', picking);
+  const mine = $('cMine');
+  if (played) { mine.style.display=''; mine.textContent = 'You opened #' + played.box + ': ' + played.prize; $('btnPlay').style.display='none'; }
+  else { mine.style.display='none'; $('btnPlay').style.display = PUB.open ? '' : 'none'; }
+  $('notice').textContent = PUB.open ? (picking ? 'Tap any unopened box.' : '') : 'The booths are closed for today. Come back when the next day opens.';
+}
+
+// ---------------- play flow ----------------
+$('btnPlay').addEventListener('click', () => { $('pStep1').style.display=''; $('pStep2').style.display='none'; $('pCode').value=''; $('playDlg').classList.add('on'); setTimeout(()=>$('pCode').focus(),50); });
+['pCancel1','pCancel2'].forEach(id => $(id).addEventListener('click', () => $('playDlg').classList.remove('on')));
+$('pNext').addEventListener('click', () => {
+  if (!$('pCode').value.trim()) return toast('Enter the code you were given.');
+  $('pStep1').style.display='none'; $('pStep2').style.display='';
+  const n=ls.get('mb-name'); if(n) $('pName').value=n; const s=ls.get('mb-sup'); if(s && PUB.sups.includes(s)) $('pSup').value=s;
+  const e=ls.get('mb-email'); if(e) $('pEmail').value=e;
+});
+function validateForm(){
+  const name=$('pName').value.trim(), email=$('pEmail').value.trim().toLowerCase();
+  if (!name) return 'Enter your name.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Enter a valid work email.';
+  if (PUB.domains.length && !PUB.domains.some(d => email.endsWith('@'+d.toLowerCase()))) return 'Use your work email (' + PUB.domains.join(', ') + ').';
+  if (!PUB.sups.length) return 'No supervisors are set up yet. Tell an admin.';
+  return '';
+}
+$('pGo').addEventListener('click', () => {
+  const err = validateForm(); if (err) return $('pStatus').textContent = err;
+  const email=$('pEmail').value.trim().toLowerCase();
+  ls.set('mb-name',$('pName').value.trim()); ls.set('mb-email',email); ls.set('mb-sup',$('pSup').value);
+  picking = true; $('playDlg').classList.remove('on'); renderGrid(); toast('Now tap a box.');
+  window.scrollTo({top: $('grid').offsetTop - 80, behavior:'smooth'});
+});
+
+async function pickBox(n){
+  if (!picking) return;
+  if (boxes[n] && boxes[n].opened) return toast('That one is already open.');
+  const code=$('pCode').value.trim(), name=$('pName').value.trim(), email=$('pEmail').value.trim().toLowerCase(), sup=$('pSup').value;
+  const ek = emailKey(email);
+  picking = false; renderGrid(); $('notice').innerHTML = '<span class="spin"></span> Opening box #' + n + '…';
+  // The prize is hidden from the browser. We try each possible prize; Firestore rules only accept the one that is really behind the box.
+  const candidates = Array.from(new Set([...(PUB.prizeNames||[]), PUB.empty].filter(Boolean)));
+  let won = null, lastErr = null;
+  for (const prize of candidates) {
+    try {
+      const batch = writeBatch(db);
+      batch.update(doc(db,C.boxes,String(n)), { opened:true, prize, name: shortName(name), uid, at: Date.now() });
+      batch.set(doc(db,C.players,ek), { box:n, prize, name, sup, email, uid, code, day: PUB.round||'', board: BOARD, at: Date.now() });
+      batch.set(doc(db,C.devices,uid), { box:n, prize, email, at: Date.now() });
+      await batch.commit(); won = prize; break;
+    } catch(err){ lastErr = err; }
+  }
+  if (won) {
+    played = {box:n, prize:won}; renderGrid();
+    $('rBox').textContent = 'Box #' + n; $('rPrize').textContent = won; $('rNote').textContent = won === PUB.empty ? 'Thanks for playing!' : 'Your supervisor and the budget team will have the details.';
+    $('revealDlg').classList.add('on');
+  } else {
+    // figure out why
+    let why = 'Something blocked that pick.';
+    try { const dv = await getDoc(doc(db,C.devices,uid)); if (dv.exists()) { played = dv.data(); why = 'This device already opened a box.'; } } catch(e){}
+    if (!played) {
+      const fresh = await getDoc(doc(db,C.boxes,String(n))).catch(()=>null);
+      if (fresh && fresh.exists() && fresh.data().opened) why = 'Someone grabbed box #' + n + ' a second before you. Pick another one.';
+      else why = "That code isn't valid today, or this email has already played.";
+    }
+    renderGrid(); $('notice').textContent = why; toast(why, 5000);
+    if (why.startsWith('Someone')) { picking = true; renderGrid(); }
+  }
+}
+$('rClose').addEventListener('click', () => $('revealDlg').classList.remove('on'));
+
+// ---------------- admin ----------------
+let adminDirty = false;
+document.addEventListener('input', e => { if (e.target.closest && e.target.closest('#admin') && e.target.id !== 'aOpen' && e.target.id !== 'aCode') adminDirty = true; });
+function fillAdmin(force){
+  $('aOpen').checked = !!PUB.open;
+  if (adminDirty && !force) return;
+  $('aRound').value = PUB.round || '';
+  $('aIcon').value = PUB.icon; $('aCount').value = PUB.count; $('aKicker').value = PUB.kicker; $('aTitle').value = PUB.title; $('aSub').value = PUB.sub;
+  $('aAccent').value = PUB.accent; $('aBoxBg').value = PUB.boxBg; $('aSups').value = PUB.sups.join(', '); $('aDomains').value = PUB.domains.join(', ');
+  $('aBoxInk').value = PUB.boxInk||'#fff8e7'; $('aBoxBorder').value = PUB.boxBorder||'#1a1412'; $('aBoxBw').value = PUB.boxBw ?? 3; $('aBoxR').value = PUB.boxR||0; $('aNums').checked = PUB.nums !== false;
+  $('aPageBg').value = PUB.pageBg||'#f4e9d2'; $('aStripes').checked = PUB.stripes !== false; $('aFont').value = PUB.font || "'Rye',serif";
+  pendingIcon = PUB.iconImg || ''; pendingBg = PUB.bgImg || ''; showIconPrev();
+  $('aEmpty').value = PUB.empty; renderPool(PUB.pool);
+}
+function renderPool(pool){
+  const box = $('aPool'); box.innerHTML = '';
+  pool.forEach(p => addPoolRow(p.name, p.qty));
+  updatePoolTotal();
+}
+function addPoolRow(name, qty){
+  const r = document.createElement('div'); r.className='pool';
+  r.innerHTML = '<input type="text" placeholder="Prize (e.g. $25 gift card)" maxlength="60"><input type="number" min="0" max="80" value="1"><button class="x" aria-label="Remove">✕</button>';
+  r.children[0].value = name || ''; r.children[1].value = qty ?? 1;
+  r.children[2].addEventListener('click', () => { r.remove(); updatePoolTotal(); });
+  r.children[1].addEventListener('input', updatePoolTotal);
+  $('aPool').appendChild(r);
+}
+function readPool(){ return Array.from($('aPool').querySelectorAll('.pool')).map(r => ({name:r.children[0].value.trim(), qty:Math.max(0, +r.children[1].value||0)})).filter(p => p.name); }
+function updatePoolTotal(){ const t = readPool().reduce((a,p)=>a+p.qty,0); const c = +$('aCount').value||PUB.count; $('aPoolTotal').textContent = t + ' prizes for ' + c + ' boxes' + (t < c ? ' (' + (c-t) + ' empty)' : t > c ? ' (' + (t-c) + ' won\'t fit)' : ''); }
+$('aPoolAdd').addEventListener('click', () => addPoolRow('', 1));
+$('aCount').addEventListener('input', updatePoolTotal);
+$('aPreset').addEventListener('change', e => { const p = PRESETS[e.target.value]; if (!p) return;
+  $('aIcon').value=p.icon; $('aKicker').value=p.kicker; $('aTitle').value=p.title; $('aSub').value=p.sub; $('aAccent').value=p.accent; $('aBoxBg').value=p.boxBg; $('aBoxInk').value=p.boxInk; $('aBoxBorder').value=p.boxBorder; $('aBoxBw').value=p.boxBw; $('aBoxR').value=p.boxR; $('aPageBg').value=p.pageBg; $('aStripes').checked=p.stripes; $('aFont').value=p.font; pendingIcon=''; showIconPrev(); adminDirty = true; });
+let pendingIcon = '', pendingBg = '';
+function showIconPrev(){ const p=$('aIconPrev'); p.innerHTML=''; p.style.background=$('aBoxBg').value; if (pendingIcon) { const i=document.createElement('img'); i.src=pendingIcon; i.style.cssText='width:70%;height:70%;object-fit:contain'; p.appendChild(i); } else p.textContent=$('aIcon').value; }
+$('aIcon').addEventListener('input', showIconPrev); $('aBoxBg').addEventListener('input', showIconPrev);
+function fileToData(file, max, mime, q, cap){ return new Promise((res,rej)=>{ const img=new Image(); const url=URL.createObjectURL(file); img.onload=()=>{ URL.revokeObjectURL(url); let w=img.naturalWidth,h=img.naturalHeight; const sc=Math.min(1,max/Math.max(w,h)); w=Math.round(w*sc); h=Math.round(h*sc); const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); let out=c.toDataURL(mime,q); let qq=q; while(out.length>cap && qq>0.4 && mime==='image/jpeg'){ qq-=0.1; out=c.toDataURL(mime,qq); } res(out); }; img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('bad image')); }; img.src=url; }); }
+$('aIconFile').addEventListener('change', async e => { const f=e.target.files&&e.target.files[0]; if(!f) return; try { pendingIcon = await fileToData(f, 240, f.type==='image/png'?'image/png':'image/jpeg', 0.85, 120000); if (pendingIcon.length > 160000) { toast('That image is too detailed; try a simpler or smaller one.'); pendingIcon=''; } showIconPrev(); adminDirty=true; } catch(err){ toast('Could not read that image.'); } });
+$('aIconClear').addEventListener('click', ()=>{ pendingIcon=''; $('aIconFile').value=''; showIconPrev(); adminDirty=true; });
+$('aBgFile').addEventListener('change', async e => { const f=e.target.files&&e.target.files[0]; if(!f) return; try { pendingBg = await fileToData(f, 1400, 'image/jpeg', 0.75, 300000); toast('Background ready. Click Save look.'); adminDirty=true; } catch(err){ toast('Could not read that image.'); } });
+$('aBgClear').addEventListener('click', ()=>{ pendingBg=''; $('aBgFile').value=''; adminDirty=true; toast('Background will be removed when you Save look.'); });
+
+async function savePublic(patch){ await setDoc(doc(db,C.game,'public'), Object.assign({}, PUB, patch)); }
+$('aCodeSave').addEventListener('click', async () => {
+  const code = $('aCode').value.trim(); if (!code) return $('aStatus').textContent='Enter a code.';
+  try { await setDoc(doc(db,C.game,'secret'), { code }); await savePublic({ round: $('aRound').value.trim() || PUB.round }); $('aStatus').textContent='Saved. Day: ' + ($('aRound').value.trim()||PUB.round) + ' · code: ' + code; } catch(err){ $('aStatus').textContent='Could not save (' + (err.code||'error') + ').'; }
+});
+$('aOpen').addEventListener('change', async e => { try { await savePublic({open: e.target.checked}); } catch(err){ toast('Could not save.'); } });
+$('aLookSave').addEventListener('click', async () => {
+  const patch = { icon:$('aIcon').value.trim()||'🎁', count:Math.min(80,Math.max(6,+$('aCount').value||30)), kicker:$('aKicker').value.trim(), title:$('aTitle').value.trim()||'Mystery Boxes', sub:$('aSub').value.trim(),
+    accent:$('aAccent').value, boxBg:$('aBoxBg').value, sups:$('aSups').value.split(',').map(x=>x.trim()).filter(Boolean), domains:$('aDomains').value.split(',').map(x=>x.trim().replace(/^@/,'')).filter(Boolean),
+    boxInk:$('aBoxInk').value, boxBorder:$('aBoxBorder').value, boxBw:Math.max(0,Math.min(12,+$('aBoxBw').value||0)), boxR:Math.max(0,Math.min(100,+$('aBoxR').value||0)), nums:$('aNums').checked,
+    pageBg:$('aPageBg').value, stripes:$('aStripes').checked, font:$('aFont').value, iconImg:pendingIcon, bgImg:pendingBg };
+  try { await savePublic(patch); adminDirty = false; $('aLookStatus').textContent='Saved.'; if (patch.count !== PUB.count) $('aLookStatus').textContent='Saved. Box count changed: click "Save prizes and randomize" to rebuild the board.'; }
+  catch(err){ $('aLookStatus').textContent='Could not save (' + (err.code||'error') + ').'; }
+});
+
+function shuffle(a){ for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+$('aRandom').addEventListener('click', async () => {
+  const pool = readPool(), empty = $('aEmpty').value.trim() || 'Empty', count = Math.min(80,Math.max(6,+$('aCount').value||30));
+  const st = $('aBoardStatus'); st.innerHTML='<span class="spin"></span> Building…';
+  try {
+    // prizes already claimed stay claimed; distribute the remainder over unopened boxes
+    let remaining = []; pool.forEach(p => { for (let i=0;i<p.qty;i++) remaining.push(p.name); });
+    for (let n=1;n<=count;n++){ const b=boxes[n]; if (b && b.opened) { const i = remaining.indexOf(b.prize); if (i>=0) remaining.splice(i,1); } }
+    const unopened = []; for (let n=1;n<=count;n++){ if (!(boxes[n] && boxes[n].opened)) unopened.push(n); }
+    remaining = shuffle(remaining).slice(0, unopened.length); while (remaining.length < unopened.length) remaining.push(empty); shuffle(remaining);
+    const batch = writeBatch(db);
+    unopened.forEach((n, i) => { batch.set(doc(db,C.secret,String(n)), { prize: remaining[i] }); batch.set(doc(db,C.boxes,String(n)), { opened:false }); });
+    // remove boxes beyond count
+    for (let n=count+1;n<=80;n++){ if (boxes[n]) { batch.delete(doc(db,C.boxes,String(n))); batch.delete(doc(db,C.secret,String(n))); } }
+    const prizeNames = Array.from(new Set(pool.map(p=>p.name)));
+    batch.set(doc(db,C.game,'public'), Object.assign({}, PUB, { pool, empty, count, prizeNames }));
+    await batch.commit(); adminDirty = false;
+    st.textContent = 'Board randomized: ' + unopened.length + ' boxes reshuffled.';
+    if ($('aShow').checked) loadPeek();
+  } catch(err){ st.textContent='Failed (' + (err.code||err.message) + ').'; }
+});
+$('aShow').addEventListener('change', e => { if (e.target.checked) loadPeek(); else $('aPeek').style.display='none'; });
+async function loadPeek(){
+  const snap = await getDocs(collection(db,C.secret)); secretBoxes = {}; snap.docs.forEach(d => secretBoxes[+d.id] = d.data().prize);
+  let h = '<table><tr><th>Box</th><th>Prize</th><th>Status</th></tr>';
+  for (let n=1;n<=PUB.count;n++){ const b=boxes[n]||{}; h += '<tr><td>#'+n+'</td><td>'+esc(b.opened?b.prize:secretBoxes[n]||'—')+'</td><td>'+(b.opened?'Opened by '+esc(b.name):'Closed')+'</td></tr>'; }
+  $('aPeek').innerHTML = h + '</table>'; $('aPeek').style.display='';
+}
+async function loadWinners(){
+  const snap = await getDocs(collection(db,C.players)); const rows = snap.docs.map(d=>d.data()).sort((a,b)=>a.box-b.box);
+  rows.sort((a,b)=>(a.at||0)-(b.at||0));
+  let h = '<table><tr><th>Day</th><th>Box</th><th>Prize</th><th>Name</th><th>Supervisor</th><th>Email</th><th>When</th></tr>';
+  rows.forEach(r => { h += '<tr><td>'+esc(r.day||'')+'</td><td>#'+r.box+'</td><td>'+esc(r.prize)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.sup)+'</td><td>'+esc(r.email)+'</td><td>'+new Date(r.at||0).toLocaleString()+'</td></tr>'; });
+  $('aWinners').innerHTML = h + '</table>' + (rows.length ? '' : '<div class="status">No winners yet.</div>');
+  return rows;
+}
+function winnersCsv(rows){
+  const q=x=>'"'+String(x==null?'':x).replace(/"/g,'""')+'"';
+  const lines=['Board,Day,Box,Prize,Name,Supervisor,Email,Opened'];
+  rows.sort((a,b)=>(a.board||'').localeCompare(b.board||'') || (a.at||0)-(b.at||0)).forEach(r=>lines.push([r.board==='V'?'Vendors':'Americor', r.day||'', r.box, r.prize, r.name, r.sup, r.email, new Date(r.at||0).toLocaleString()].map(q).join(',')));
+  // payout totals by person
+  const tot={}; rows.forEach(r=>{ const m=String(r.prize).match(/\$\s*([\d.]+)/); if(m){ const k=r.email; tot[k]=tot[k]||{name:r.name,sup:r.sup,board:r.board,amt:0,n:0}; tot[k].amt+=+m[1]; tot[k].n++; } });
+  lines.push('','PAYOUT TOTALS BY PERSON','Board,Name,Supervisor,Email,Boxes opened,Total $');
+  Object.entries(tot).sort((a,b)=>b[1].amt-a[1].amt).forEach(([e,t])=>lines.push([t.board==='V'?'Vendors':'Americor',t.name,t.sup,e,t.n,t.amt].map(q).join(',')));
+  return '\ufeff'+lines.join('\r\n');
+}
+function dl(name, text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'})); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+$('aExport').addEventListener('click', async () => { const rows = await loadWinners(); dl('midway_winners_'+(BOARD==='V'?'vendors':'americor')+'.csv', winnersCsv(rows.map(r=>Object.assign({board:BOARD},r)))); });
+$('aExportBoth').addEventListener('click', async () => {
+  const st=$('aResetStatus'); st.innerHTML='<span class="spin"></span> Gathering both boards…';
+  try { const mine=(await getDocs(collection(db,C.players))).docs.map(d=>Object.assign({board:BOARD},d.data())); const other=(await getDocs(collection(db,'players'+OTHER))).docs.map(d=>Object.assign({board:OTHER},d.data()));
+    dl('midway_winners_all_boards.csv', winnersCsv(mine.concat(other))); st.textContent='Downloaded '+(mine.length+other.length)+' winners across both boards.'; }
+  catch(err){ st.textContent='Could not read the other board ('+(err.code||err.message)+'). Make sure the latest rules are published.'; }
+});
+async function wipe(cols){ for (const c of cols){ const snap = await getDocs(collection(db,c)); let b = writeBatch(db), i=0; for (const d of snap.docs){ b.delete(d.ref); if (++i%400===0){ await b.commit(); b=writeBatch(db);} } await b.commit(); } }
+$('aResetBoard').addEventListener('click', async () => {
+  if (!confirm('Clear all opened boxes and reshuffle? People who already played still cannot play again.')) return;
+  const st=$('aResetStatus'); st.innerHTML='<span class="spin"></span> Resetting…';
+  try { await wipe([C.boxes,C.secret]); boxes = {}; $('aRandom').click(); st.textContent='Board cleared. Rebuilding…'; } catch(err){ st.textContent='Failed (' + (err.code||err.message) + ').'; }
+});
+$('aResetAll').addEventListener('click', async () => {
+  if (!confirm('Full reset: wipes the board AND the winners list so everyone can play again. Export the CSV first.')) return;
+  if (prompt('Type RESET to confirm') !== 'RESET') return;
+  const st=$('aResetStatus'); st.innerHTML='<span class="spin"></span> Resetting…';
+  try { await wipe([C.boxes,C.secret,C.players,C.devices]); boxes = {}; played = null; $('aWinners').innerHTML=''; $('aRandom').click(); st.textContent='Everything cleared. Rebuilding the board…'; } catch(err){ st.textContent='Failed (' + (err.code||err.message) + ').'; }
+});
+
+// ---------------- auth / boot ----------------
+$('adminLink').addEventListener('click', e => { e.preventDefault(); $('adminDlg').classList.add('on'); $('dOut').style.display = isAdmin ? '' : 'none'; });
+$('dCancel').addEventListener('click', ()=>$('adminDlg').classList.remove('on'));
+$('adminDlg').addEventListener('click', e=>{ if(e.target===$('adminDlg')) $('adminDlg').classList.remove('on'); });
+
+applyLook(); renderGrid();
+const app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app);
+let started = false;
+onAuthStateChanged(auth, async u => {
+  if (!u) { uid=null; isAdmin=false; try { await signInAnonymously(auth); } catch(e){ $('notice').textContent='Could not connect (enable Anonymous sign-in in Firebase Auth).'; } return; }
+  uid = u.uid; isAdmin = !u.isAnonymous; $('admin').classList.toggle('on', isAdmin);
+  if (isAdmin) { fillAdmin(true); try { const s = await getDoc(doc(db,C.game,'secret')); if (s.exists()) $('aCode').value = s.data().code || ''; } catch(e){} loadWinners(); }
+  try { const dv = await getDoc(doc(db,C.devices,uid)); played = dv.exists() ? dv.data() : null; } catch(e){ played = null; }
+  if (!started) {
+    started = true;
+    onSnapshot(doc(db,C.game,'public'), s => { PUB = Object.assign({}, DEFAULT_PUBLIC, s.exists() ? s.data() : {}); applyLook(); if (isAdmin) fillAdmin(); renderGrid(); });
+    onSnapshot(collection(db,C.boxes), snap => { boxes = {}; snap.docs.forEach(d => boxes[+d.id] = d.data()); renderGrid(); if (isAdmin) loadWinners(); });
+  } else renderGrid();
+});
+$('dGo').addEventListener('click', async ()=>{ $('dStatus').textContent='Signing in…'; try { await signInWithEmailAndPassword(auth, $('dEmail').value.trim(), $('dPass').value); $('dStatus').textContent=''; $('adminDlg').classList.remove('on'); toast('Signed in as admin.'); } catch(err){ $('dStatus').textContent='Sign-in failed: ' + (err.code||'error'); } });
+$('dOut').addEventListener('click', async ()=>{ await signOut(auth); $('adminDlg').classList.remove('on'); toast('Signed out.'); });
+</script>
+</body>
+</html>
